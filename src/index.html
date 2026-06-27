@@ -373,6 +373,14 @@
             is valid.</p>
           </details>
           <details>
+            <summary>What's the amber "modulus check" warning on an account?</summary>
+            <p>PayBatch runs the official UK bank <strong>modulus check</strong> (VocaLink /
+            Pay.UK) on the sort code + account number. An <span class="docs-warn">amber</span>
+            warning means that combination can't be a real account — almost always a
+            <strong>typo</strong>. It's a warning, not a block: double-check the digits, but
+            you can still export if you're sure they're right.</p>
+          </details>
+          <details>
             <summary>Can I paste from Excel or Google Sheets?</summary>
             <p>Yes. Select the cells, copy, then press <strong>Cmd/Ctrl + V</strong> on the
             Build batch screen. Columns are detected automatically. A header row is
@@ -507,6 +515,8 @@
   <script src="santander.js"></script>
   <script src="standard18.js"></script>
   <script src="iso20022.js"></script>
+  <script src="modulus-data.js"></script>
+  <script src="modulus.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

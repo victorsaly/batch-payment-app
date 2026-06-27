@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ## Unreleased
 
 ### Added
+- **UK modulus checking** — PayBatch now runs the official VocaLink / Pay.UK modulus
+  check on each sort code + account number and shows an **amber warning** when a
+  combination can't be a real account (a likely typo). It's a warning, not a block —
+  you can still export. Validated against VocaLink's official test cases.
 - **ISO 20022 `pain.001` (XML)** — a new cross-bank format (the modern standard used by
   HSBC, Barclays, Lloyds and NatWest). v1 covers **UK domestic GBP** credit transfers
   (sort code + account). Pick the **ISO 20022** bank to use it. SEPA/international are

@@ -601,12 +601,29 @@ function renderBatch() {
   updateFooter();
 }
 
+// Validate a row and augment it with a UK modulus check — an amber warning (not
+// a blocking error) when a 6-digit sort code + 8-digit account fail the check.
+function validateRow(p) {
+  const r = S.validatePayment(p, settings.paymentType, validationFormat());
+  const sort = onlyDigits(p.sortCode);
+  const acct = onlyDigits(p.accountNumber);
+  if (window.Modulus && sort.length === 6 && acct.length === 8
+    && !r.fieldErrors.accountNumber && !r.fieldWarnings.accountNumber) {
+    const m = window.Modulus.check(sort, acct);
+    if (m.checked && !m.valid) {
+      r.fieldWarnings.accountNumber = 'Sort code / account fails the bank modulus check — likely a typo';
+      r.warnings = Object.values(r.fieldWarnings);
+    }
+  }
+  return r;
+}
+
 // Re-validate ONE row and update its visuals only (never touches input values,
 // so the caret stays put while typing).
 function updateRow(i) {
   const tr = $(`#batch-table tbody tr[data-index="${i}"]`);
   if (!tr) return;
-  const { fieldErrors, fieldWarnings, errors, warnings } = S.validatePayment(batch[i], settings.paymentType, validationFormat());
+  const { fieldErrors, fieldWarnings, errors, warnings } = validateRow(batch[i]);
 
   CELLS.forEach((c) => {
     const input = tr.querySelector(`input[data-field="${c.field}"]`);
@@ -641,7 +658,7 @@ function onCellInput(e) {
 // Totals + summary badge + enable/disable export.
 function updateFooter() {
   const hasRows = batch.length > 0;
-  const results = S.validateBatch(batch, settings.paymentType, validationFormat());
+  const results = batch.map(validateRow);
   const errorCount = results.filter((r) => r.errors.length).length;
   const warnCount = results.filter((r) => !r.errors.length && r.warnings.length).length;
 

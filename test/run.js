@@ -12,6 +12,7 @@ const path = require('path');
 const S = require('../src/santander.js');
 const S18 = require('../src/standard18.js');
 const ISO = require('../src/iso20022.js');
+const Modulus = require('../src/modulus.js');
 const F = S.OUTPUT_FORMATS;
 
 let passed = 0;
@@ -218,12 +219,49 @@ test('Template is valid and re-imports to its example rows', () => {
   assert.strictEqual(S.importPayments(tpl).length, 2);
 });
 
+// ---------------------------------------------------------------- modulus check
+// The official VocaLink test cases (the canonical set covering MOD10/MOD11/DBLAL
+// and the exceptions). These prove the algorithm + bundled weight tables.
+test('Modulus check passes all official VocaLink valid test cases', () => {
+  const valid = [
+    ['180002', '00000190'], ['309070', '02355688'], ['086090', '06774744'], ['938611', '07806039'],
+    ['871427', '09123496'], ['074456', '11104102'], ['074456', '12345112'], ['309070', '12345668'],
+    ['309070', '12345677'], ['827101', '28748352'], ['070116', '34012583'], ['200915', '41011166'],
+    ['938600', '42368003'], ['871427', '46238510'], ['872427', '46238510'], ['938063', '55065200'],
+    ['202959', '63748472'], ['134020', '63849203'], ['118765', '64371389'], ['089999', '66374958'],
+    ['820000', '73688637'], ['827999', '73988638'], ['107999', '88837491'], ['871427', '99123496'],
+    ['309070', '99345694'], ['772798', '99345694']
+  ];
+  for (const [s, a] of valid) {
+    const r = Modulus.check(s, a);
+    assert.ok(r.checked && r.valid, `expected VALID: ${s} ${a} → ${JSON.stringify(r)}`);
+  }
+});
+
+test('Modulus check rejects all official VocaLink invalid test cases', () => {
+  const invalid = [
+    ['938063', '15763217'], ['938063', '15764264'], ['938063', '15764273'], ['203099', '58716970'],
+    ['118765', '64371388'], ['089999', '66374959'], ['203099', '66831036'], ['107999', '88837493']
+  ];
+  for (const [s, a] of invalid) {
+    const r = Modulus.check(s, a);
+    assert.ok(r.checked && !r.valid, `expected INVALID: ${s} ${a} → ${JSON.stringify(r)}`);
+  }
+});
+
+test('Modulus check returns checked:false for an unlisted sort code', () => {
+  // 000000 is not in any weight-table range → cannot be checked.
+  const r = Modulus.check('000000', '12345678');
+  assert.strictEqual(r.checked, false);
+  assert.strictEqual(r.valid, true);
+});
+
 // ---------------------------------------------------------------- safety net
 // The src/*.js browser scripts share one global scope at runtime, so a top-level
 // const/let/class with the same name in two files is a fatal SyntaxError that
 // ESLint can't see (it lints per-file). This guard catches that class of bug.
 test('No top-level const/let/class name collides across browser scripts', () => {
-  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'renderer.js'];
+  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'modulus-data.js', 'modulus.js', 'renderer.js'];
   const seen = {};
   const dupes = [];
   for (const f of files) {

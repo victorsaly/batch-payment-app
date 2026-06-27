@@ -23,6 +23,8 @@ Node.js 18+ is required.
 | `preload.js` | The only bridge between the UI and the system (contextIsolation on) |
 | `src/santander.js` | Santander formats (Bacs import + mixed) + validation |
 | `src/standard18.js` | Bacs Standard 18 format |
+| `src/iso20022.js` | ISO 20022 pain.001 (XML) format |
+| `src/modulus.js` · `modulus-data.js` | UK sort code/account modulus check + bundled VocaLink tables |
 | `src/banks.js` | The bank registry (which banks/formats are available) |
 | `src/renderer.js` · `index.html` · `styles.css` | The user interface |
 | `test/run.js` | Tests (run with `npm test`) |
@@ -50,6 +52,16 @@ Node.js 18+ is required.
 3. Add tests in `test/run.js`.
 4. **Always verify against the bank's real import spec and a test upload** before
    marking a format available — see `ROADMAP.md`.
+
+## Refreshing the modulus-check tables
+
+The UK modulus check (`src/modulus.js`) uses VocaLink/Pay.UK weight tables bundled
+in `src/modulus-data.js`. Pay.UK updates these periodically (~quarterly). To refresh:
+
+```bash
+node scripts/build-modulus-data.js   # re-fetches and regenerates src/modulus-data.js
+npm test                             # the official VocaLink test cases must still pass
+```
 
 ## Releasing
 
