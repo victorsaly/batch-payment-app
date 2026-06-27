@@ -53,6 +53,9 @@ body {
   font-size: 12px; letter-spacing: .02em; padding: 5px 12px; border-radius: 20px; margin-bottom: 12px; }
 .home-hero h1 { margin: 6px 0 8px; font-size: 30px; letter-spacing: -.02em; }
 .home-hero p { margin: 0 auto; max-width: 560px; color: var(--muted); font-size: 15px; }
+.home-trust { display: inline-flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.home-trust span { background: var(--ok-bg); color: #15703f; border: 1px solid #cdeedb;
+  border-radius: 20px; padding: 5px 13px; font-size: 12.5px; font-weight: 600; }
 .home-section { margin-bottom: 26px; }
 .home-step-label { display: flex; align-items: center; gap: 9px; font-weight: 700; font-size: 15px; margin-bottom: 12px; }
 .step-num {
@@ -352,6 +355,11 @@ tr.has-error td { background: #fff7f7; }
   display: flex; justify-content: space-between; align-items: center;
 }
 .status-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.status-right { display: flex; align-items: center; gap: 14px; flex: none; }
+.author { color: var(--muted); font-size: 12px; }
+.link-quiet { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 700; padding: 0; }
+.link-quiet:hover { color: var(--red); text-decoration: underline; }
+.credit { margin-top: 8px; color: var(--muted); font-size: 13px; }
 #storage-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .version-pill {
   flex: none; border: 1px solid var(--line); background: var(--bg);

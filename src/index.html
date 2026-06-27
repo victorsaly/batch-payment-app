@@ -52,6 +52,11 @@
           <h1>Welcome to PayBatch</h1>
           <p>Turn your payment list into the exact file your bank expects — in three steps,
              with no fiddly spreadsheet.</p>
+          <div class="home-trust" title="Your data never leaves this computer">
+            <span>🔒 Encrypted</span>
+            <span>📴 Works fully offline</span>
+            <span>🚫 Never uploaded or shared online</span>
+          </div>
         </div>
 
         <div class="home-section">
@@ -420,6 +425,8 @@
           <button id="open-changelog" class="link">View changelog</button> ·
           <button id="check-updates" class="link">Check for updates</button>
         </p>
+        <p class="credit">Created by <strong>Victor Saly</strong>. Free &amp; open source —
+          <button id="help-repo-link" class="link">view the source on GitHub</button>.</p>
       </div>
     </section>
   </main>
@@ -429,7 +436,10 @@
       <button id="footer-version" class="version-pill" title="View changelog">PayBatch</button>
       <span id="storage-path">Data stored locally on this computer</span>
     </span>
-    <span id="toast" class="toast"></span>
+    <span class="status-right">
+      <span id="toast" class="toast"></span>
+      <span class="author">Created by <button id="author-link" class="link-quiet">Victor Saly</button></span>
+    </span>
   </footer>
 
   <!-- Simple modal for editing a payee -->

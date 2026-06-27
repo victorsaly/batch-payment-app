@@ -486,6 +486,8 @@ function wireEvents() {
   // Changelog + version
   $('#open-changelog').addEventListener('click', openChangelog);
   $('#footer-version').addEventListener('click', openChangelog);
+  $('#author-link').addEventListener('click', () => window.api.openExternal('https://github.com/victorsaly'));
+  $('#help-repo-link').addEventListener('click', () => window.api.openExternal('https://github.com/victorsaly/batch-payment-app'));
 
   // Error tracking UI
   $('#error-close').addEventListener('click', () => $('#error-modal').classList.add('hidden'));
