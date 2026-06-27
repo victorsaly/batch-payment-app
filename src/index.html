@@ -9,8 +9,16 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- Loading splash, hidden once the renderer has initialised -->
+  <div id="splash">
+    <img src="logo.svg" class="splash-logo" alt="" />
+    <div class="splash-name">PayBatch</div>
+    <div class="splash-tag">Bulk payments, without the spreadsheet</div>
+    <div class="splash-spinner"></div>
+  </div>
+
   <header class="topbar">
-    <div class="brand">
+    <div class="brand" id="brand-home" title="Go to home">
       <img class="logo" src="logo.svg" alt="PayBatch logo" />
       <div>
         <h1>PayBatch</h1>
@@ -18,7 +26,8 @@
       </div>
     </div>
     <nav class="tabs">
-      <button class="tab active" data-view="batch">Build batch</button>
+      <button class="tab active" data-view="home">Home</button>
+      <button class="tab" data-view="batch">Build batch</button>
       <button class="tab" data-view="payees">Saved payees</button>
       <button class="tab" data-view="history">History</button>
       <button class="tab" data-view="help">Help</button>
@@ -35,8 +44,59 @@
   </div>
 
   <main>
+    <!-- ===================== HOME / LANDING VIEW ===================== -->
+    <section id="view-home" class="view active">
+      <div class="home">
+        <div class="home-hero">
+          <img class="home-logo" src="logo.svg" alt="" />
+          <h1>Welcome to PayBatch</h1>
+          <p>Turn your payment list into the exact file your bank expects — in three steps,
+             with no fiddly spreadsheet.</p>
+        </div>
+
+        <div class="home-section">
+          <div class="home-step-label"><span class="step-num">1</span> Choose your bank</div>
+          <div class="bank-strip" id="home-bank-strip"></div>
+        </div>
+
+        <div class="home-section">
+          <div class="home-step-label"><span class="step-num">2</span> Start your batch</div>
+          <div class="home-actions">
+            <button class="home-card" id="home-new">
+              <span class="home-card-icon">＋</span>
+              <span class="home-card-title">New batch</span>
+              <span class="home-card-sub">Add payments in a grid or one at a time</span>
+            </button>
+            <button class="home-card" id="home-import">
+              <span class="home-card-icon">⤓</span>
+              <span class="home-card-title">Import a file</span>
+              <span class="home-card-sub">Load an Excel / CSV export</span>
+            </button>
+            <button class="home-card" id="home-template">
+              <span class="home-card-icon">▦</span>
+              <span class="home-card-title">Get the template</span>
+              <span class="home-card-sub">A ready-to-fill CSV to start from</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="home-bottom">
+          <div class="home-recent" id="home-recent"></div>
+          <div class="home-how">
+            <h3>How it works</h3>
+            <ol>
+              <li>Pick your bank and payment format.</li>
+              <li>Enter or import your payments — every row is checked as you go.</li>
+              <li>Export the file and upload it to your bank. Done.</li>
+            </ol>
+            <p class="hint">Everything stays on this computer and is encrypted. PayBatch never sends your data anywhere.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- ===================== BUILD BATCH VIEW ===================== -->
-    <section id="view-batch" class="view active">
+    <section id="view-batch" class="view">
       <!-- Bank picker -->
       <div class="bank-strip" id="bank-strip"></div>
 

@@ -1,7 +1,7 @@
 {
   "name": "batch-payment-app",
   "productName": "PayBatch",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "PayBatch — a local, offline desktop app to build and export your bank's bulk-payment import files, replacing the clunky Excel process. Supports Santander Connect (Bacs & mixed); more banks coming.",
   "main": "main.js",
   "author": "Victor Saly <info@victorsaly.com>",

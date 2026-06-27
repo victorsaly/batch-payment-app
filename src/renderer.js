@@ -60,6 +60,9 @@ async function init() {
   // Save once on launch so any legacy plaintext file is migrated to the
   // encrypted store (and removed) right away, not just on the next change.
   await persist();
+
+  // Hold the splash briefly for a smooth start, then reveal the app.
+  setTimeout(hideSplash, 650);
 }
 
 function renderAll() {
@@ -67,6 +70,7 @@ function renderAll() {
   renderPayees();
   renderPayeePicker();
   renderHistory();
+  renderHomeRecent();
   updateMultiNote();
 }
 
@@ -102,39 +106,76 @@ function applyRtiVisibility() {
   $$('.rti-col').forEach((el) => el.classList.toggle('hidden', hide));
 }
 
-// ----------------------------------------------------------------- bank picker
-const Banks = window.Banks;
+// ----------------------------------------------------------------- navigation
+function goToView(view) {
+  $$('.tab').forEach((x) => x.classList.toggle('active', x.dataset.view === view));
+  $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + view));
+  if (view === 'home') renderHomeRecent();
+  document.querySelector('main').scrollTop = 0;
+}
 
+function hideSplash() {
+  const s = $('#splash');
+  if (!s) return;
+  s.classList.add('hide');
+  setTimeout(() => { s.style.display = 'none'; }, 500);
+}
+
+// ----------------------------------------------------------------- bank picker
+const BankReg = window.Banks;
+
+// Renders the bank tiles into every .bank-strip (home + build screen) so they
+// stay in sync.
 function renderBankStrip() {
-  const strip = $('#bank-strip');
-  strip.innerHTML = '';
-  Banks.BANKS.forEach((b) => {
-    const soon = b.status !== 'available';
-    const tile = document.createElement('button');
-    tile.type = 'button';
-    tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
-    tile.dataset.bank = b.id;
-    tile.innerHTML = `
-      <span class="bank-badge" style="background:${b.color}">${esc(b.initial)}</span>
-      <span class="bank-meta">
-        <span class="bank-name">${esc(b.name)}</span>
-        <span class="bank-status">${soon ? 'Coming soon' : 'Available'}</span>
-      </span>`;
-    tile.addEventListener('click', () => onSelectBank(b.id));
-    strip.appendChild(tile);
+  $$('.bank-strip').forEach((strip) => {
+    strip.innerHTML = '';
+    BankReg.BANKS.forEach((b) => {
+      const soon = b.status !== 'available';
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
+      tile.dataset.bank = b.id;
+      tile.innerHTML = `
+        <span class="bank-badge" style="background:${b.color}">${esc(b.initial)}</span>
+        <span class="bank-meta">
+          <span class="bank-name">${esc(b.name)}</span>
+          <span class="bank-status">${soon ? 'Coming soon' : 'Available'}</span>
+        </span>`;
+      tile.addEventListener('click', () => onSelectBank(b.id));
+      strip.appendChild(tile);
+    });
   });
 }
 
 function onSelectBank(id) {
   settings.selectedBank = id;
-  $$('#bank-strip .bank-tile').forEach((t) => t.classList.toggle('active', t.dataset.bank === id));
+  $$('.bank-strip .bank-tile').forEach((t) => t.classList.toggle('active', t.dataset.bank === id));
   saveSettingsToData();
   applyBankUI();
 }
 
+// Quick "your data" summary on the home screen.
+function renderHomeRecent() {
+  const el = $('#home-recent');
+  if (!el) return;
+  let html = '<h3>Your data</h3>';
+  html += `<div class="recent-row"><span>Saved payees</span><strong>${data.payees.length}</strong></div>`;
+  html += `<div class="recent-row"><span>Saved batches</span><strong>${data.batches.length}</strong></div>`;
+  const recent = data.batches.slice(0, 3);
+  if (recent.length) {
+    html += '<h3>Recent batches</h3>';
+    recent.forEach((b) => {
+      html += `<div class="recent-row"><span>${esc(new Date(b.savedAt).toLocaleDateString())} · ${b.payments.length} payment${b.payments.length === 1 ? '' : 's'}</span><strong>£${esc(S.formatAmount(b.total))}</strong></div>`;
+    });
+  } else {
+    html += '<p class="recent-empty">No saved batches yet — your past runs will show here.</p>';
+  }
+  el.innerHTML = html;
+}
+
 // Show the working area only for an available bank; otherwise a "coming soon" card.
 function applyBankUI() {
-  const bank = Banks.get(settings.selectedBank) || Banks.get('santander');
+  const bank = BankReg.get(settings.selectedBank) || BankReg.get('santander');
   const available = bank.status === 'available';
   $('#bank-workspace').classList.toggle('hidden', !available);
   $('#coming-soon').classList.toggle('hidden', available);
@@ -234,14 +275,16 @@ function updateMultiNote() {
 
 // ----------------------------------------------------------------- events
 function wireEvents() {
-  $$('.tab').forEach((t) =>
-    t.addEventListener('click', () => {
-      $$('.tab').forEach((x) => x.classList.remove('active'));
-      $$('.view').forEach((v) => v.classList.remove('active'));
-      t.classList.add('active');
-      $('#view-' + t.dataset.view).classList.add('active');
-    })
-  );
+  $$('.tab').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
+  $('#brand-home').addEventListener('click', () => goToView('home'));
+
+  // Home landing CTAs
+  $('#home-new').addEventListener('click', () => {
+    goToView('batch');
+    if (BankReg.isAvailable(settings.selectedBank) && batch.length === 0) onAddRow();
+  });
+  $('#home-import').addEventListener('click', () => { goToView('batch'); if (BankReg.isAvailable(settings.selectedBank)) onImport(); });
+  $('#home-template').addEventListener('click', onDownloadTemplate);
 
   // Settings inputs: keep state + persistence in sync, re-validate batch.
   ['s-debit-sort', 's-debit-account', 's-payment-date', 's-seq', 's-location'].forEach((id) =>
@@ -568,12 +611,10 @@ function renderHistory() {
       if (b.settings) {
         settings = { ...settings, ...b.settings, paymentDate: S.todayISO() };
         writeSettingsToInputs();
-        updateMultiNote();
+        applyBankUI();
+        applyFormatUI();
       }
-      $$('.tab').forEach((x) => x.classList.remove('active'));
-      $$('.view').forEach((v) => v.classList.remove('active'));
-      document.querySelector('.tab[data-view="batch"]').classList.add('active');
-      $('#view-batch').classList.add('active');
+      goToView('batch');
       renderBatch();
       toast('Batch loaded — check the payment date, then re-export');
     })

@@ -4,6 +4,17 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.0.1 — 2026-06-27
+
+### Added
+- **Home / landing screen** — pick your bank and jump straight into a new batch,
+  an import, or the template, with a summary of your saved data.
+- **Loading splash** on start-up.
+
+### Fixed
+- App was unresponsive (tabs/buttons did nothing) due to a script error
+  (`Banks` declared twice). Resolved — the whole UI is interactive again.
+
 ## v1.0.0 — 2026-06-27
 
 First public release. 🎉
