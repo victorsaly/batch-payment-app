@@ -10,6 +10,7 @@ let editingPayeeId = null;
 
 // File-level settings for the current run (mirrors the settings card inputs).
 let settings = {
+  selectedBank: 'santander',
   outputFormat: S.OUTPUT_FORMATS.BACS_IMPORT,
   paymentType: S.PAYMENT_TYPES.SINGLE,
   debitSortCode: '',
@@ -36,9 +37,13 @@ async function init() {
   settings.sequenceNumber = data.settings.sequenceNumber || 1;
   settings.paymentType = data.settings.paymentType || S.PAYMENT_TYPES.SINGLE;
   settings.outputFormat = data.settings.outputFormat || S.OUTPUT_FORMATS.BACS_IMPORT;
+  settings.selectedBank = data.settings.selectedBank || 'santander';
 
   writeSettingsToInputs();
+  renderBankStrip();
+  applyBankUI();
   applyFormatUI();
+  initVersionAndUpdates();
 
   try {
     const st = await window.api.dataStatus();
@@ -69,6 +74,7 @@ async function persist() { await window.api.saveData(data); }
 
 function saveSettingsToData() {
   data.settings = {
+    selectedBank: settings.selectedBank,
     outputFormat: settings.outputFormat,
     debitSortCode: settings.debitSortCode,
     debitAccountNumber: settings.debitAccountNumber,
@@ -94,6 +100,107 @@ function applyFormatUI() {
 function applyRtiVisibility() {
   const hide = settings.outputFormat === S.OUTPUT_FORMATS.MIXED;
   $$('.rti-col').forEach((el) => el.classList.toggle('hidden', hide));
+}
+
+// ----------------------------------------------------------------- bank picker
+const Banks = window.Banks;
+
+function renderBankStrip() {
+  const strip = $('#bank-strip');
+  strip.innerHTML = '';
+  Banks.BANKS.forEach((b) => {
+    const soon = b.status !== 'available';
+    const tile = document.createElement('button');
+    tile.type = 'button';
+    tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
+    tile.dataset.bank = b.id;
+    tile.innerHTML = `
+      <span class="bank-badge" style="background:${b.color}">${esc(b.initial)}</span>
+      <span class="bank-meta">
+        <span class="bank-name">${esc(b.name)}</span>
+        <span class="bank-status">${soon ? 'Coming soon' : 'Available'}</span>
+      </span>`;
+    tile.addEventListener('click', () => onSelectBank(b.id));
+    strip.appendChild(tile);
+  });
+}
+
+function onSelectBank(id) {
+  settings.selectedBank = id;
+  $$('#bank-strip .bank-tile').forEach((t) => t.classList.toggle('active', t.dataset.bank === id));
+  saveSettingsToData();
+  applyBankUI();
+}
+
+// Show the working area only for an available bank; otherwise a "coming soon" card.
+function applyBankUI() {
+  const bank = Banks.get(settings.selectedBank) || Banks.get('santander');
+  const available = bank.status === 'available';
+  $('#bank-workspace').classList.toggle('hidden', !available);
+  $('#coming-soon').classList.toggle('hidden', available);
+  if (!available) {
+    $('#cs-tile').textContent = bank.initial;
+    $('#cs-tile').style.background = bank.color;
+    $('#cs-title').textContent = `${bank.name} — coming soon`;
+    $('#coming-soon-text').textContent = bank.note;
+  }
+}
+
+// ----------------------------------------------------------------- version / updates
+async function initVersionAndUpdates() {
+  try {
+    const v = await window.api.appVersion();
+    const el = $('#app-version');
+    if (el) el.textContent = 'v' + v;
+  } catch (_) {}
+  checkForUpdates(false);
+}
+
+async function checkForUpdates(manual) {
+  let res;
+  try { res = await window.api.checkUpdate(); } catch (_) { res = { ok: false }; }
+
+  if (res && res.available) {
+    $('#update-text').textContent = `PayBatch ${res.latest} is available (you have ${res.current}).`;
+    $('#update-banner').dataset.url = res.url || '';
+    $('#update-banner').classList.remove('hidden');
+  } else if (manual) {
+    if (res && res.ok) toast('You’re on the latest version');
+    else toast('Could not check for updates right now', true);
+  }
+}
+
+// ----------------------------------------------------------------- changelog
+async function openChangelog() {
+  const body = $('#changelog-body');
+  body.innerHTML = 'Loading…';
+  $('#changelog-modal').classList.remove('hidden');
+  let md = '';
+  try { md = await window.api.changelog(); } catch (_) { md = '# Changelog\n\nUnavailable.'; }
+  body.innerHTML = renderMarkdown(md);
+}
+
+// Tiny markdown renderer — headings, bullet lists, bold, and links. Enough for
+// a Keep-a-Changelog file; everything is escaped first so it's injection-safe.
+function renderMarkdown(md) {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  let html = '', inList = false;
+  const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
+  for (let raw of lines) {
+    const line = esc(raw);
+    if (/^#\s+/.test(line)) { closeList(); continue; }              // skip the top H1 title
+    if (/^##\s+/.test(line)) { closeList(); html += `<h3>${inline(line.replace(/^##\s+/, ''))}</h3>`; }
+    else if (/^###\s+/.test(line)) { closeList(); html += `<h4>${inline(line.replace(/^###\s+/, ''))}</h4>`; }
+    else if (/^[-*]\s+/.test(line)) { if (!inList) { html += '<ul>'; inList = true; } html += `<li>${inline(line.replace(/^[-*]\s+/, ''))}</li>`; }
+    else if (line.trim() === '') { closeList(); }
+    else { closeList(); html += `<p>${inline(line)}</p>`; }
+  }
+  closeList();
+  return html || '<p>No changelog yet.</p>';
+  function inline(s) {
+    return s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            .replace(/`(.+?)`/g, '<code>$1</code>');
+  }
 }
 
 // ----------------------------------------------------------------- settings card
@@ -186,6 +293,19 @@ function wireEvents() {
   $('#add-payee').addEventListener('click', () => openPayeeModal(null));
   $('#modal-save').addEventListener('click', onSavePayee);
   $('#modal-cancel').addEventListener('click', closeModal);
+
+  // Update banner
+  $('#update-download').addEventListener('click', () => {
+    const url = $('#update-banner').dataset.url;
+    if (url) window.api.openExternal(url);
+  });
+  $('#update-whatsnew').addEventListener('click', openChangelog);
+  $('#update-dismiss').addEventListener('click', () => $('#update-banner').classList.add('hidden'));
+
+  // Changelog + version
+  $('#open-changelog').addEventListener('click', openChangelog);
+  $('#changelog-close').addEventListener('click', () => $('#changelog-modal').classList.add('hidden'));
+  $('#check-updates').addEventListener('click', () => { checkForUpdates(true); toast('Checking for updates…'); });
 }
 
 // ----------------------------------------------------------------- add payment

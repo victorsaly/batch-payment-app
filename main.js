@@ -1,6 +1,10 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, safeStorage } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const https = require('https');
+
+// Where to look for new releases (the GitHub repo backing this app).
+const REPO = { owner: 'victorsaly', repo: 'batch-payment-app' };
 
 // Persistent data lives inside the OS user-data folder. Nothing is sent
 // anywhere — this is a fully local, offline app.
@@ -60,7 +64,7 @@ function createWindow() {
     height: 860,
     minWidth: 900,
     minHeight: 600,
-    title: 'Santander Batch Payment',
+    title: 'PayBatch',
     icon: path.join(__dirname, 'build', 'icon.png'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -109,6 +113,74 @@ ipcMain.handle('file:export', async (_evt, opts) => {
 ipcMain.handle('file:reveal', (_evt, filePath) => {
   if (filePath) shell.showItemInFolder(filePath);
   return true;
+});
+
+// ---- IPC: open an external link in the user's default browser ----
+ipcMain.handle('shell:open-external', (_evt, url) => {
+  if (/^https?:\/\//.test(url || '')) shell.openExternal(url);
+  return true;
+});
+
+// ---- IPC: app version + bundled changelog ----
+ipcMain.handle('app:version', () => app.getVersion());
+
+ipcMain.handle('app:changelog', () => {
+  try { return fs.readFileSync(path.join(__dirname, 'CHANGELOG.md'), 'utf8'); }
+  catch (_) { return '# Changelog\n\nNo changelog found.'; }
+});
+
+// ---- IPC: check GitHub for a newer release ----
+// Runs in the main process so the renderer keeps its strict, network-free CSP.
+function semverGt(a, b) {
+  const pa = String(a).replace(/^v/, '').split('.').map(Number);
+  const pb = String(b).replace(/^v/, '').split('.').map(Number);
+  for (let i = 0; i < 3; i++) {
+    if ((pa[i] || 0) > (pb[i] || 0)) return true;
+    if ((pa[i] || 0) < (pb[i] || 0)) return false;
+  }
+  return false;
+}
+
+function fetchLatestRelease() {
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.github.com',
+      path: `/repos/${REPO.owner}/${REPO.repo}/releases/latest`,
+      method: 'GET',
+      headers: { 'User-Agent': 'PayBatch', 'Accept': 'application/vnd.github+json' },
+      timeout: 6000
+    }, (res) => {
+      let body = '';
+      res.on('data', (c) => (body += c));
+      res.on('end', () => {
+        if (res.statusCode !== 200) return reject(new Error('HTTP ' + res.statusCode));
+        try { resolve(JSON.parse(body)); } catch (e) { reject(e); }
+      });
+    });
+    req.on('timeout', () => req.destroy(new Error('timeout')));
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+ipcMain.handle('app:check-update', async () => {
+  const current = app.getVersion();
+  try {
+    const rel = await fetchLatestRelease();
+    const latest = (rel.tag_name || rel.name || '').replace(/^v/, '');
+    if (!latest) return { ok: true, available: false, current };
+    return {
+      ok: true,
+      available: semverGt(latest, current),
+      current,
+      latest,
+      url: rel.html_url || `https://github.com/${REPO.owner}/${REPO.repo}/releases/latest`,
+      notes: rel.body || ''
+    };
+  } catch (err) {
+    // Private repo (needs auth), offline, or rate-limited — fail quietly.
+    return { ok: false, available: false, current, error: String(err.message || err) };
+  }
 });
 
 // ---- IPC: import/read a file the user already has ----

@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="Content-Security-Policy"
         content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';" />
-  <title>Santander Batch Payment</title>
+  <title>PayBatch</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
-      <img class="logo" src="logo.svg" alt="Santander Batch Payment logo" />
+      <img class="logo" src="logo.svg" alt="PayBatch logo" />
       <div>
-        <h1>Santander Batch Payment</h1>
-        <p class="sub">Build a Bacs payment run and export the import file your bank expects</p>
+        <h1>PayBatch</h1>
+        <p class="sub">Build a payment run and export the bulk-payment file your bank expects</p>
       </div>
     </div>
     <nav class="tabs">
@@ -25,9 +25,33 @@
     </nav>
   </header>
 
+  <!-- Update-available banner (populated by the main-process version check) -->
+  <div id="update-banner" class="update-banner hidden">
+    <span id="update-text"></span>
+    <span class="spacer"></span>
+    <button id="update-whatsnew" class="btn tiny ghost">What’s new</button>
+    <button id="update-download" class="btn tiny primary">Download</button>
+    <button id="update-dismiss" class="btn tiny ghost">Dismiss</button>
+  </div>
+
   <main>
     <!-- ===================== BUILD BATCH VIEW ===================== -->
     <section id="view-batch" class="view active">
+      <!-- Bank picker -->
+      <div class="bank-strip" id="bank-strip"></div>
+
+      <!-- Shown when a not-yet-supported bank is selected -->
+      <div id="coming-soon" class="card coming-soon hidden">
+        <div class="cs-tile" id="cs-tile"></div>
+        <div class="cs-body">
+          <h2 id="cs-title">Coming soon</h2>
+          <p id="coming-soon-text"></p>
+          <p class="hint">This bank is on the roadmap. Select <strong>Santander</strong> to build a file now.</p>
+        </div>
+      </div>
+
+      <!-- The working area, hidden while a coming-soon bank is selected -->
+      <div id="bank-workspace">
       <!-- File-level settings required by the Santander Bacs import format -->
       <div class="card settings-card">
         <div class="card-head">
@@ -153,6 +177,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /#bank-workspace -->
     </section>
 
     <!-- ===================== PAYEES VIEW ===================== -->
@@ -193,10 +218,13 @@
     <!-- ===================== HELP VIEW ===================== -->
     <section id="view-help" class="view">
       <div class="card docs">
-        <h2>How to use this app</h2>
+        <h2>How to use PayBatch</h2>
+        <p>PayBatch builds the bulk-payment import file your bank expects, so you can skip
+        the manual spreadsheet. It currently supports <strong>Santander Connect</strong>
+        (with more banks planned).</p>
 
         <h3>1. Choose your output format</h3>
-        <p>At the top of <strong>Build batch</strong>, pick the format Santander expects:</p>
+        <p>At the top of <strong>Build batch</strong>, pick the format your bank (Santander) expects:</p>
         <ul>
           <li><strong>Bacs import (.txt)</strong> — Santander Connect's official Bacs
             payment import file. Needs your debit account, a payment date, and a file
@@ -255,6 +283,12 @@
         You are responsible for checking that every beneficiary, sort code, account number,
         amount and reference is correct before submitting a payment file to your bank.
         Always reconcile the on-screen total against your records.</p>
+
+        <h3>Version</h3>
+        <p>You're running PayBatch <strong id="app-version">—</strong>.
+          <button id="open-changelog" class="link">View changelog</button> ·
+          <button id="check-updates" class="link">Check for updates</button>
+        </p>
       </div>
     </section>
   </main>
@@ -281,6 +315,18 @@
     </div>
   </div>
 
+  <!-- Changelog modal -->
+  <div id="changelog-modal" class="modal-backdrop hidden">
+    <div class="modal modal-wide">
+      <div class="card-head">
+        <h3>What's new in PayBatch</h3>
+        <button id="changelog-close" class="btn ghost tiny">Close</button>
+      </div>
+      <div id="changelog-body" class="changelog-body">Loading…</div>
+    </div>
+  </div>
+
+  <script src="banks.js"></script>
   <script src="santander.js"></script>
   <script src="renderer.js"></script>
 </body>

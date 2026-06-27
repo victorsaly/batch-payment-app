@@ -81,6 +81,49 @@ main { flex: 1; overflow: auto; padding: 22px; }
 .card-head h2 { margin: 0; }
 .head-actions { display: flex; gap: 8px; }
 
+/* ---------------- update banner ---------------- */
+.update-banner {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff7e6; border-bottom: 1px solid #f0d9a8;
+  padding: 8px 22px; font-size: 13.5px; color: #6b4e00;
+}
+.update-banner .spacer { flex: 1; }
+.btn.tiny { padding: 5px 10px; font-size: 12px; }
+
+/* ---------------- bank picker ---------------- */
+.bank-strip { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.bank-tile {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--card); border: 1.5px solid var(--line);
+  border-radius: 12px; padding: 10px 14px; cursor: pointer;
+  min-width: 150px; position: relative; transition: border-color .12s, box-shadow .12s;
+}
+.bank-tile:hover { border-color: #c8cdd4; }
+.bank-tile.active { border-color: var(--ink); box-shadow: var(--shadow); }
+.bank-badge {
+  width: 38px; height: 38px; border-radius: 9px; flex: none;
+  display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 18px;
+}
+.bank-meta { display: flex; flex-direction: column; line-height: 1.2; }
+.bank-name { font-weight: 600; font-size: 14px; }
+.bank-status { font-size: 11px; color: var(--muted); }
+.bank-tile.soon { opacity: 0.75; }
+.bank-tile.soon .bank-status { color: var(--warn); }
+
+.coming-soon { display: flex; gap: 18px; align-items: center; }
+.cs-tile { width: 60px; height: 60px; border-radius: 14px; flex: none;
+  display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 28px; }
+.coming-soon h2 { margin: 0 0 4px; }
+.coming-soon p { margin: 0 0 4px; }
+
+/* ---------------- changelog ---------------- */
+.modal.modal-wide { width: 640px; max-width: 92vw; }
+.changelog-body { max-height: 60vh; overflow: auto; margin-top: 10px; font-size: 14px; line-height: 1.5; }
+.changelog-body h3 { margin: 16px 0 4px; font-size: 14.5px; color: var(--red); }
+.changelog-body h4 { margin: 14px 0 4px; font-size: 13.5px; }
+.changelog-body ul { margin: 4px 0 10px; padding-left: 20px; }
+.changelog-body li { margin-bottom: 3px; }
+
 /* ---------------- settings card ---------------- */
 .settings-card { margin-bottom: 18px; }
 .settings-grid {

@@ -1,8 +1,9 @@
 <div align="center">
-  <img src="build/icon.png" width="120" alt="Santander Batch Payment logo" />
-  <h1>Santander Batch Payment</h1>
-  <p><strong>A local, offline desktop app that builds and exports Santander Connect
+  <img src="build/icon.png" width="120" alt="PayBatch logo" />
+  <h1>PayBatch</h1>
+  <p><strong>A local, offline desktop app that builds and exports your bank's
   bulk-payment import files — replacing the clunky Excel process.</strong></p>
+  <p><em>Currently supports Santander Connect. More banks planned.</em></p>
 
   <p>
     <a href="https://github.com/victorsaly/batch-payment-app/actions/workflows/ci.yml">
@@ -41,9 +42,9 @@ Grab the latest installer for your OS from the
 
 | OS | File |
 |----|------|
-| macOS | `Santander-Batch-Payment-x.y.z.dmg` |
-| Windows | `Santander-Batch-Payment-Setup-x.y.z.exe` |
-| Linux | `Santander-Batch-Payment-x.y.z.AppImage` / `.deb` |
+| macOS | `PayBatch-x.y.z.dmg` |
+| Windows | `PayBatch-Setup-x.y.z.exe` |
+| Linux | `PayBatch-x.y.z.AppImage` / `.deb` |
 
 > **First launch on macOS** — the app isn't code-signed, so right-click the app →
 > **Open** → **Open** to bypass Gatekeeper the first time.

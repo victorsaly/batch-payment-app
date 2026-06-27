@@ -1,8 +1,8 @@
 {
   "name": "batch-payment-app",
-  "productName": "Santander Batch Payment",
+  "productName": "PayBatch",
   "version": "1.0.0",
-  "description": "Local, offline desktop app to build and export Santander Connect Bacs / mixed bulk-payment import files — replacing the clunky Excel process.",
+  "description": "PayBatch — a local, offline desktop app to build and export your bank's bulk-payment import files, replacing the clunky Excel process. Supports Santander Connect (Bacs & mixed); more banks coming.",
   "main": "main.js",
   "author": "Victor Saly <info@victorsaly.com>",
   "license": "MIT",
@@ -29,8 +29,8 @@
     "release": "electron-builder --publish always"
   },
   "build": {
-    "appId": "com.victorsaly.batchpayment",
-    "productName": "Santander Batch Payment",
+    "appId": "com.victorsaly.paybatch",
+    "productName": "PayBatch",
     "copyright": "Copyright © 2026 Victor Saly",
     "directories": {
       "buildResources": "build",
@@ -40,7 +40,8 @@
       "main.js",
       "preload.js",
       "src/**/*",
-      "build/icon.png"
+      "build/icon.png",
+      "CHANGELOG.md"
     ],
     "publish": [
       {
@@ -67,7 +68,7 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "Santander Batch Payment"
+      "shortcutName": "PayBatch"
     },
     "linux": {
       "target": ["AppImage", "deb"],
