@@ -322,7 +322,10 @@ function buildOutput(format, settings, payments) {
 // Imports a simple beneficiary list (e.g. your existing Excel export saved as
 // CSV): name, sort code, account number, amount, reference. Header optional.
 
-function parseCsv(text) {
+// Parse delimited text (comma for CSV files, tab for Excel/Sheets paste),
+// honouring quoted fields. `delim` defaults to comma.
+function parseDelimited(text, delim) {
+  const d = delim || ',';
   const rows = [];
   let row = [], field = '', inQuotes = false;
   const s = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -332,7 +335,7 @@ function parseCsv(text) {
       if (c === '"') { if (s[i + 1] === '"') { field += '"'; i++; } else inQuotes = false; }
       else field += c;
     } else if (c === '"') inQuotes = true;
-    else if (c === ',') { row.push(field); field = ''; }
+    else if (c === d) { row.push(field); field = ''; }
     else if (c === '\n') { row.push(field); field = ''; rows.push(row); row = []; }
     else field += c;
   }
@@ -340,8 +343,12 @@ function parseCsv(text) {
   return rows.filter(r => r.some(cell => cell.trim() !== ''));
 }
 
+function parseCsv(text) { return parseDelimited(text, ','); }
+
 function importPayments(text) {
-  const rows = parseCsv(text);
+  // Excel/Sheets copy as tab-separated; CSV files are comma-separated.
+  const delim = text.indexOf('\t') !== -1 ? '\t' : ',';
+  const rows = parseDelimited(text, delim);
   if (!rows.length) return [];
 
   // A generated MIXED file: wide rows with type code "01" at column index 3.
@@ -378,7 +385,15 @@ function importPayments(text) {
   }
 
   const header = rows[0].map(h => h.trim().toLowerCase());
-  const looksLikeHeader = header.some(h => /name|sort|account|amount|reference|payee|ref/.test(h));
+  // Row 0 is a header only if it reads like labels — not if it already looks
+  // like payment data (a 6/8-digit number or a decimal amount means it's data,
+  // e.g. a single pasted row whose reference happens to contain "ref").
+  const hasKeyword = header.some(h => /name|sort|account|amount|reference|payee|ref/.test(h));
+  const looksLikeData = header.some(h => {
+    const digits = h.replace(/\D/g, '');
+    return digits.length === 6 || digits.length === 8 || /^\d+\.\d{2}$/.test(h.trim());
+  });
+  const looksLikeHeader = hasKeyword && !looksLikeData;
   const find = (...keys) => header.findIndex(h => keys.some(k => h.includes(k)));
 
   let idx = { name: 0, sort: 1, account: 2, amount: 3, reference: 4 };
@@ -408,7 +423,7 @@ const Santander = {
   validateSettings, validatePayment, validateMixedPayment, validateBatch,
   buildFile, buildHeaderLine, buildPaymentLine, buildTrailerLine,
   buildMixedFile, buildMixedLine, buildOutput,
-  importPayments, parseCsv, buildTemplate,
+  importPayments, parseCsv, parseDelimited, buildTemplate,
   sanitizeFreeText, sanitizeMixedText, sanitizeRti, formatSortCode, formatAmount,
   toDDMMYYYY, fromDDMMYYYY, todayISO, totalAmount, hashTotal
 };

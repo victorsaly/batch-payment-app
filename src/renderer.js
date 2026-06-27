@@ -42,6 +42,7 @@ async function init() {
   writeSettingsToInputs();
   renderBankStrip();
   applyBankUI();
+  updateBankIndicator();
   applyFormatUI();
   initVersionAndUpdates();
 
@@ -152,6 +153,39 @@ function onSelectBank(id) {
   $$('.bank-strip .bank-tile').forEach((t) => t.classList.toggle('active', t.dataset.bank === id));
   saveSettingsToData();
   applyBankUI();
+  updateBankIndicator();
+}
+
+// Compact "selected bank" chip shown on the Build screen (Change ▸ goes Home).
+function updateBankIndicator() {
+  const bank = BankReg.get(settings.selectedBank) || BankReg.get('santander');
+  const badge = $('#chip-badge'), name = $('#chip-name');
+  if (badge) { badge.textContent = bank.initial; badge.style.background = bank.color; }
+  if (name) name.textContent = bank.name;
+}
+
+// ----------------------------------------------------------------- paste from Excel
+// When the user copies a block of cells in Excel/Sheets and pastes (Cmd/Ctrl+V),
+// the clipboard holds tab-separated rows. Detect that and load it into the batch.
+function onPasteIntoBatch(e) {
+  if (!$('#view-batch').classList.contains('active')) return;       // only on Build screen
+  if (!BankReg.isAvailable(settings.selectedBank)) return;          // not while "coming soon"
+
+  const text = (e.clipboardData || window.clipboardData || {}).getData
+    ? (e.clipboardData || window.clipboardData).getData('text') : '';
+  if (!text) return;
+
+  // A single value (no tabs, single line) is a normal field paste — leave it.
+  const isTabular = text.indexOf('\t') !== -1 || /\n.*\S/.test(text.trim());
+  if (!isTabular) return;
+
+  const rows = S.importPayments(text);
+  if (!rows.length) return;
+
+  e.preventDefault();
+  batch = batch.concat(rows);
+  renderBatch();
+  toast(`Pasted ${rows.length} payment${rows.length > 1 ? 's' : ''} from the clipboard — review highlighted rows`);
 }
 
 // Quick "your data" summary on the home screen.
@@ -277,6 +311,10 @@ function updateMultiNote() {
 function wireEvents() {
   $$('.tab').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
   $('#brand-home').addEventListener('click', () => goToView('home'));
+  $('#bank-indicator').addEventListener('click', () => goToView('home'));
+
+  // Paste straight from Excel/Sheets — drop tabular clipboard data into the batch.
+  document.addEventListener('paste', onPasteIntoBatch);
 
   // Home landing CTAs
   $('#home-new').addEventListener('click', () => {

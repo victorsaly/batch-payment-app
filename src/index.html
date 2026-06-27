@@ -97,9 +97,6 @@
 
     <!-- ===================== BUILD BATCH VIEW ===================== -->
     <section id="view-batch" class="view">
-      <!-- Bank picker -->
-      <div class="bank-strip" id="bank-strip"></div>
-
       <!-- Shown when a not-yet-supported bank is selected -->
       <div id="coming-soon" class="card coming-soon hidden">
         <div class="cs-tile" id="cs-tile"></div>
@@ -115,7 +112,14 @@
       <!-- File-level settings required by the Santander Bacs import format -->
       <div class="card settings-card">
         <div class="card-head">
-          <h2>Payment run settings</h2>
+          <div class="settings-title">
+            <h2>Payment run settings</h2>
+            <button type="button" id="bank-indicator" class="bank-chip" title="Change bank">
+              <span class="chip-badge" id="chip-badge">S</span>
+              <span id="chip-name">Santander</span>
+              <span class="chip-change">Change ▸</span>
+            </button>
+          </div>
           <div class="seg" id="format-seg">
             <button type="button" class="seg-btn active" data-format="BACS_IMPORT">Bacs import (.txt)</button>
             <button type="button" class="seg-btn" data-format="MIXED">Mixed payments (.txt)</button>
@@ -208,7 +212,8 @@
 
           <div id="batch-empty" class="empty">
             No payments yet. Add one on the left, click <strong>+ Add row</strong>,
-            or <strong>Import</strong> a CSV (grab the <strong>Template</strong> first).
+            <strong>paste rows straight from Excel</strong>, or <strong>Import</strong> a CSV
+            (grab the <strong>Template</strong> first).
           </div>
 
           <div id="batch-table-wrap" class="table-wrap hidden">
@@ -354,7 +359,10 @@
   </main>
 
   <footer class="statusbar">
-    <span id="storage-path">Data stored locally on this computer</span>
+    <span class="status-left">
+      <button id="footer-version" class="version-pill" title="View changelog">PayBatch</button>
+      <span id="storage-path">Data stored locally on this computer</span>
+    </span>
     <span id="toast" class="toast"></span>
   </footer>
 

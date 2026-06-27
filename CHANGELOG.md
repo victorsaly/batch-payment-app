@@ -4,6 +4,17 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.0.2 — 2026-06-27
+
+### Added
+- **Bank chip** on the Build screen showing the selected bank, with a quick
+  "Change ▸" back to the home screen to switch bank.
+
+### Changed
+- Release pipeline now builds each platform, then publishes all installers from
+  a single job — so macOS, Windows and Linux always land in the same release
+  (previously the macOS build could be missed due to a publish race).
+
 ## v1.0.1 — 2026-06-27
 
 ### Added

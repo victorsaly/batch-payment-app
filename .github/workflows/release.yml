@@ -1,8 +1,8 @@
 name: Release
 
-# Build installers for macOS, Windows and Linux and attach them to a GitHub
-# Release whenever you push a version tag (e.g. v1.0.0). Run:
-#   git tag v1.0.0 && git push origin v1.0.0
+# Build installers for macOS, Windows and Linux, then publish them all to a
+# single GitHub Release. Triggered by pushing a version tag (e.g. v1.0.2):
+#   git tag v1.0.2 && git push origin v1.0.2
 on:
   push:
     tags: ['v*']
@@ -12,32 +12,49 @@ permissions:
   contents: write
 
 jobs:
+  # 1) Build on each OS and upload the installers as workflow artifacts.
   build:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-latest
-          - os: windows-latest
-          - os: ubuntu-latest
+        os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
-
       - uses: actions/setup-node@v5
         with:
           node-version: 20
           cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build installers (no publish)
+        run: npx electron-builder --publish never
+      - name: Upload installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-${{ matrix.os }}
+          if-no-files-found: ignore
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.exe
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.yml
+            dist/*.blockmap
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run tests
-        run: npm test
-
-      - name: Build & publish installers
-        env:
-          # electron-builder uploads the artifacts to the GitHub Release for
-          # this tag (created as a draft you then publish).
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx electron-builder --publish always
+  # 2) Collect every platform's artifacts and publish one draft release.
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - name: Publish draft GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          fail_on_unmatched_files: false
+          files: artifacts/**/*
