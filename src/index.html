@@ -62,15 +62,17 @@
         <div class="home-section">
           <div class="home-step-label"><span class="step-num">1</span> Choose your bank</div>
           <input id="bank-search" class="bank-search" type="search" placeholder="Search banks…" autocomplete="off" />
-          <div class="bank-group" id="grp-available">
-            <div class="bank-group-label">Available now</div>
-            <div class="bank-strip" id="home-bank-available"></div>
+          <div class="bank-scroll">
+            <div class="bank-group" id="grp-available">
+              <div class="bank-group-label">Available now</div>
+              <div class="bank-strip" id="home-bank-available"></div>
+            </div>
+            <div class="bank-group" id="grp-soon">
+              <div class="bank-group-label">Coming soon</div>
+              <div class="bank-strip" id="home-bank-soon"></div>
+            </div>
+            <p class="bank-noresult hidden" id="bank-noresult">No banks match your search.</p>
           </div>
-          <div class="bank-group" id="grp-soon">
-            <div class="bank-group-label">Coming soon</div>
-            <div class="bank-strip" id="home-bank-soon"></div>
-          </div>
-          <p class="bank-noresult hidden" id="bank-noresult">No banks match your search.</p>
         </div>
 
         <div class="home-section">
