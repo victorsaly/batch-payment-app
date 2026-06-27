@@ -150,11 +150,13 @@
     </div>
     <div class="reassure">
       <p><strong>“Is it safe to open?”</strong> Yes. PayBatch is free and fully open source — you can
-      read every line on GitHub. It isn't code-signed with a paid certificate yet, so on first
-      launch your OS may show a routine warning (normal for independent apps):</p>
-      <p class="steps-inline"><span>🍎 <strong>macOS:</strong> right-click the app → <em>Open</em> → <em>Open</em>.</span>
-        <span>🪟 <strong>Windows:</strong> <em>More info</em> → <em>Run anyway</em>.</span></p>
-      <p class="tiny">Code signing is on the roadmap to remove these prompts entirely.</p>
+      read every line on GitHub. It isn't notarized with a paid Apple certificate yet, so your OS
+      shows a routine warning (normal for independent apps):</p>
+      <p><span>🍎 <strong>macOS</strong> — if you see <em>“PayBatch is damaged”</em>, it's just the
+        un-notarized warning. Move PayBatch to Applications, then run this once in Terminal:</span></p>
+      <pre class="cmd">xattr -dr com.apple.quarantine /Applications/PayBatch.app</pre>
+      <p><span>🪟 <strong>Windows</strong> — if SmartScreen appears, click <em>More info → Run anyway</em>.</span></p>
+      <p class="tiny">Apple notarization is on the roadmap and will remove the macOS step entirely.</p>
     </div>
   </section>
 

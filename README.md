@@ -59,8 +59,12 @@ Grab the latest installer for your OS from the
 | Windows | `PayBatch-Setup-x.y.z.exe` |
 | Linux | `PayBatch-x.y.z.AppImage` / `.deb` |
 
-> **First launch on macOS** — the app isn't code-signed, so right-click the app →
-> **Open** → **Open** to bypass Gatekeeper the first time.
+> **First launch on macOS** — the app isn't notarized yet, so macOS may say
+> *"PayBatch is damaged"*. It isn't — that's just the un-notarized warning. Move
+> PayBatch to **Applications**, then run once in Terminal:
+> ```bash
+> xattr -dr com.apple.quarantine /Applications/PayBatch.app
+> ```
 > **Windows** — if SmartScreen appears, click **More info → Run anyway**.
 
 ## Run from source

@@ -68,6 +68,8 @@ a { color: inherit; }
 .reassure .steps-inline { display: flex; flex-wrap: wrap; gap: 8px 24px; }
 .reassure .steps-inline span { font-size: 14px; }
 .reassure .tiny { margin: 4px 0 0; }
+.reassure .cmd { background: #11161c; color: #e6edf3; border-radius: 8px; padding: 11px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; overflow-x: auto; margin: 6px 0 12px; }
 
 /* app preview (real screenshot) */
 .preview img {
