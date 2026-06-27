@@ -37,28 +37,32 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      # Promote the signing secrets to the names electron-builder expects, but
-      # ONLY on macOS and ONLY when they exist (see SIGNING.md). Until then,
-      # macOS builds are simply unsigned and the pipeline stays green.
+      # On macOS: if the signing secrets exist, promote them to the names
+      # electron-builder expects (→ Developer ID signing + notarization). If they
+      # don't, disable signing so the build stays green (unsigned/ad-hoc). See
+      # SIGNING.md. NOTE: CSC_IDENTITY_AUTO_DISCOVERY=false must NOT be set when
+      # signing — it makes electron-builder skip signing even with CSC_LINK present.
       - name: Configure macOS code signing
-        if: runner.os == 'macOS' && env.SIGN_CSC_LINK != ''
+        if: runner.os == 'macOS'
         run: |
-          {
-            echo "CSC_LINK<<__P12__"
-            echo "$SIGN_CSC_LINK"
-            echo "__P12__"
-            echo "CSC_KEY_PASSWORD=$SIGN_CSC_KEY_PASSWORD"
-            echo "APPLE_ID=$SIGN_APPLE_ID"
-            echo "APPLE_APP_SPECIFIC_PASSWORD=$SIGN_APPLE_APP_PASSWORD"
-            echo "APPLE_TEAM_ID=$SIGN_APPLE_TEAM_ID"
-          } >> "$GITHUB_ENV"
+          if [ -n "$SIGN_CSC_LINK" ]; then
+            echo "Signing with Developer ID + notarizing."
+            {
+              echo "CSC_LINK<<__P12__"
+              echo "$SIGN_CSC_LINK"
+              echo "__P12__"
+              echo "CSC_KEY_PASSWORD=$SIGN_CSC_KEY_PASSWORD"
+              echo "APPLE_ID=$SIGN_APPLE_ID"
+              echo "APPLE_APP_SPECIFIC_PASSWORD=$SIGN_APPLE_APP_PASSWORD"
+              echo "APPLE_TEAM_ID=$SIGN_APPLE_TEAM_ID"
+            } >> "$GITHUB_ENV"
+          else
+            echo "No signing secrets — building unsigned."
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+          fi
 
       - name: Build installers (no publish)
         run: npx electron-builder --publish never
-        env:
-          # No identity in the keychain → skip signing cleanly (unsigned build).
-          # Overridden by CSC_LINK above when signing secrets are present.
-          CSC_IDENTITY_AUTO_DISCOVERY: false
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
