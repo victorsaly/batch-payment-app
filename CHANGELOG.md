@@ -4,6 +4,13 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.0.5 — 2026-06-27
+
+### Changed
+- **macOS builds are now code-signed with a Developer ID and notarized by Apple** —
+  no more "PayBatch is damaged" / Gatekeeper warning on download; the app opens with a
+  normal double-click.
+
 ## v1.0.4 — 2026-06-27
 
 A big multi-bank, multi-format release.
