@@ -312,7 +312,7 @@ function renderMarkdown(md) {
   const lines = md.replace(/\r\n/g, '\n').split('\n');
   let html = '', inList = false;
   const closeList = () => { if (inList) { html += '</ul>'; inList = false; } };
-  for (let raw of lines) {
+  for (const raw of lines) {
     const line = esc(raw);
     if (/^#\s+/.test(line)) { closeList(); continue; }              // skip the top H1 title
     if (/^##\s+/.test(line)) { closeList(); html += `<h3>${inline(line.replace(/^##\s+/, ''))}</h3>`; }
@@ -364,15 +364,15 @@ function updateMultiNote() {
 // ----------------------------------------------------------------- error tracking
 function installErrorHandlers() {
   window.addEventListener('error', (e) =>
-    reportError('renderer', e.error || { message: e.message, stack: `${e.filename}:${e.lineno}` }));
+    handleAppError('renderer', e.error || { message: e.message, stack: `${e.filename}:${e.lineno}` }));
   window.addEventListener('unhandledrejection', (e) => {
     const r = e.reason;
-    reportError('promise', r instanceof Error ? r : { message: String(r), stack: '' });
+    handleAppError('promise', r instanceof Error ? r : { message: String(r), stack: '' });
   });
 }
 
 let lastErrorShownAt = 0;
-async function reportError(context, err) {
+async function handleAppError(context, err) {
   const message = err && err.message ? err.message : String(err);
   const stack = (err && err.stack) || '';
   let code = 'ERR-LOCAL';
@@ -687,7 +687,7 @@ async function onImport() {
     batch = batch.concat(rows);
     renderBatch();
     toast(`Imported ${rows.length} payment${rows.length > 1 ? 's' : ''} — review highlighted rows`);
-  } catch (err) { toast('Could not read that file', true); }
+  } catch (_err) { toast('Could not read that file', true); }
 }
 
 async function onExport() {

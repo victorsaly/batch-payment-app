@@ -19,6 +19,15 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
+    # Secrets are exposed under non-CSC names so an empty value can't be mistaken
+    # by electron-builder for a certificate path. They're promoted to the real
+    # CSC_*/APPLE_* names only when present (see the signing step below).
+    env:
+      SIGN_CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
+      SIGN_CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
+      SIGN_APPLE_ID: ${{ secrets.APPLE_ID }}
+      SIGN_APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+      SIGN_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -27,18 +36,29 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+
+      # Promote the signing secrets to the names electron-builder expects, but
+      # ONLY on macOS and ONLY when they exist (see SIGNING.md). Until then,
+      # macOS builds are simply unsigned and the pipeline stays green.
+      - name: Configure macOS code signing
+        if: runner.os == 'macOS' && env.SIGN_CSC_LINK != ''
+        run: |
+          {
+            echo "CSC_LINK<<__P12__"
+            echo "$SIGN_CSC_LINK"
+            echo "__P12__"
+            echo "CSC_KEY_PASSWORD=$SIGN_CSC_KEY_PASSWORD"
+            echo "APPLE_ID=$SIGN_APPLE_ID"
+            echo "APPLE_APP_SPECIFIC_PASSWORD=$SIGN_APPLE_APP_PASSWORD"
+            echo "APPLE_TEAM_ID=$SIGN_APPLE_TEAM_ID"
+          } >> "$GITHUB_ENV"
+
       - name: Build installers (no publish)
         run: npx electron-builder --publish never
         env:
-          # macOS code signing + notarization. Until these repo secrets are set,
-          # CSC_LINK is empty so the build is simply unsigned (pipeline stays green).
-          # Add the secrets (see SIGNING.md) and macOS builds sign + notarize automatically.
+          # No identity in the keychain → skip signing cleanly (unsigned build).
+          # Overridden by CSC_LINK above when signing secrets are present.
           CSC_IDENTITY_AUTO_DISCOVERY: false
-          CSC_LINK: ${{ secrets.MAC_CSC_LINK }}
-          CSC_KEY_PASSWORD: ${{ secrets.MAC_CSC_KEY_PASSWORD }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
