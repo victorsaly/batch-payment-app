@@ -35,8 +35,8 @@ const BANKS = [
     color: '#1f6f6f',
     initial: 'XML',
     status: 'available',
-    formats: ['ISO20022'],
-    note: 'ISO 20022 pain.001 (XML) — the modern cross-bank standard (HSBC, Barclays, Lloyds, NatWest). UK domestic GBP only for now; verify with your bank.'
+    formats: ['ISO20022', 'SEPA'],
+    note: 'ISO 20022 pain.001 (XML) — the modern cross-bank standard (HSBC, Barclays, Lloyds, NatWest). UK domestic GBP + SEPA euro (IBAN); verify with your bank.'
   },
   {
     id: 'lloyds',

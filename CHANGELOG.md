@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ## Unreleased
 
 ### Added
+- **SEPA credit transfers** — pay **euros to IBANs** across the EU/EEA. Choose the
+  **ISO 20022** bank, then the **SEPA EUR** format: the grid swaps to IBAN/BIC columns,
+  IBANs are checksum-validated, and the file is `pain.001.001.03` (BIC optional /
+  IBAN-only). Do a test upload to confirm your bank's SEPA profile.
 - **UK modulus checking** — PayBatch now runs the official VocaLink / Pay.UK modulus
   check on each sort code + account number and shows an **amber warning** when a
   combination can't be a real account (a likely typo). It's a warning, not a block —

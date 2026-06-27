@@ -15,6 +15,8 @@ let settings = {
   paymentType: S.PAYMENT_TYPES.SINGLE,
   debitSortCode: '',
   debitAccountNumber: '',
+  debtorIban: '',
+  debtorBic: '',
   paymentDate: S.todayISO(),
   fileLocationId: '',
   sequenceNumber: 1
@@ -34,6 +36,8 @@ async function init() {
   // Restore remembered settings; payment date always defaults to today.
   settings.debitSortCode = data.settings.debitSortCode || '';
   settings.debitAccountNumber = data.settings.debitAccountNumber || '';
+  settings.debtorIban = data.settings.debtorIban || '';
+  settings.debtorBic = data.settings.debtorBic || '';
   settings.fileLocationId = data.settings.fileLocationId || '';
   settings.sequenceNumber = data.settings.sequenceNumber || 1;
   settings.paymentType = data.settings.paymentType || S.PAYMENT_TYPES.SINGLE;
@@ -85,6 +89,8 @@ function saveSettingsToData() {
     outputFormat: settings.outputFormat,
     debitSortCode: settings.debitSortCode,
     debitAccountNumber: settings.debitAccountNumber,
+    debtorIban: settings.debtorIban,
+    debtorBic: settings.debtorBic,
     fileLocationId: settings.fileLocationId,
     sequenceNumber: settings.sequenceNumber,
     paymentType: settings.paymentType
@@ -94,17 +100,20 @@ function saveSettingsToData() {
 
 const STANDARD18 = 'STANDARD18';
 const ISO20022 = 'ISO20022';
+const SEPA = 'SEPA';
 const FORMAT_LABELS = {
   BACS_IMPORT: 'Bacs import (.txt)',
   MIXED: 'Mixed payments (.txt)',
   STANDARD18: 'Standard 18 (.txt)',
-  ISO20022: 'ISO 20022 (.xml)'
+  ISO20022: 'UK domestic (.xml)',
+  SEPA: 'SEPA EUR (.xml)'
 };
 const EXPORT_LABELS = {
   BACS_IMPORT: 'Export Bacs file (.txt)',
   MIXED: 'Export Mixed file (.txt)',
   STANDARD18: 'Export Standard 18 (.txt)',
-  ISO20022: 'Export ISO 20022 (.xml)'
+  ISO20022: 'Export ISO 20022 (.xml)',
+  SEPA: 'Export SEPA (.xml)'
 };
 
 // Standard 18 and ISO 20022 have no MULTIBACS/reference rules of their own —
@@ -147,14 +156,18 @@ function applyFormatUI() {
   });
   $$('#format-seg .seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.format === fmt));
   $('#export-btn').textContent = EXPORT_LABELS[fmt] || 'Export file (.txt)';
-  applyRtiVisibility();
+  applyColumnVisibility();
   updateMultiNote();
 }
 
-// RTI only applies to the Santander Bacs import format.
-function applyRtiVisibility() {
-  const show = settings.outputFormat === S.OUTPUT_FORMATS.BACS_IMPORT;
-  $$('.rti-col').forEach((el) => el.classList.toggle('hidden', !show));
+// Show the grid columns each format uses: SEPA → IBAN/BIC; others → sort/account
+// (RTI only for the Santander Bacs import format).
+function applyColumnVisibility() {
+  const fmt = settings.outputFormat;
+  const isSepa = fmt === SEPA;
+  $$('.col-bacs').forEach((el) => el.classList.toggle('hidden', isSepa));
+  $$('.col-sepa').forEach((el) => el.classList.toggle('hidden', !isSepa));
+  $$('.rti-col').forEach((el) => el.classList.toggle('hidden', fmt !== S.OUTPUT_FORMATS.BACS_IMPORT));
 }
 
 // ----------------------------------------------------------------- navigation
@@ -338,6 +351,8 @@ function renderMarkdown(md) {
 function writeSettingsToInputs() {
   $('#s-debit-sort').value = settings.debitSortCode;
   $('#s-debit-account').value = settings.debitAccountNumber;
+  $('#s-debtor-iban').value = settings.debtorIban;
+  $('#s-debtor-bic').value = settings.debtorBic;
   $('#s-payment-date').value = settings.paymentDate;
   $('#s-seq').value = settings.sequenceNumber;
   $('#s-location').value = settings.fileLocationId;
@@ -347,6 +362,8 @@ function writeSettingsToInputs() {
 function readSettingsFromInputs() {
   settings.debitSortCode = $('#s-debit-sort').value;
   settings.debitAccountNumber = $('#s-debit-account').value;
+  settings.debtorIban = $('#s-debtor-iban').value;
+  settings.debtorBic = $('#s-debtor-bic').value;
   settings.paymentDate = $('#s-payment-date').value;
   settings.sequenceNumber = $('#s-seq').value;
   settings.fileLocationId = $('#s-location').value;
@@ -354,8 +371,10 @@ function readSettingsFromInputs() {
 
 function updateMultiNote() {
   const note = $('#multi-note');
-  if (settings.outputFormat === ISO20022) {
-    note.innerHTML = '<strong>ISO 20022 (pain.001):</strong> modern XML credit transfers from your account. <strong>UK domestic GBP only for now</strong> (SEPA/international coming). Each bank uses its own profile — <strong>do a test upload before relying on it.</strong>';
+  if (settings.outputFormat === SEPA) {
+    note.innerHTML = '<strong>SEPA credit transfer (pain.001.001.03):</strong> euro payments to IBANs across the EU/EEA. BIC is optional (IBAN-only). Each bank uses its own SEPA profile — <strong>do a test upload before relying on it.</strong>';
+  } else if (settings.outputFormat === ISO20022) {
+    note.innerHTML = '<strong>ISO 20022 (pain.001):</strong> modern XML credit transfers from your account. <strong>UK domestic GBP only for now.</strong> Each bank uses its own profile — <strong>do a test upload before relying on it.</strong>';
   } else if (settings.outputFormat === STANDARD18) {
     note.textContent = 'Standard 18: fixed-width Bacs credit records using your account as the originator. Some banks also require tape-label records — check your bank’s upload guidance.';
   } else if (settings.outputFormat === S.OUTPUT_FORMATS.MIXED) {
@@ -439,7 +458,7 @@ function wireEvents() {
   $('#home-template').addEventListener('click', onDownloadTemplate);
 
   // Settings inputs: keep state + persistence in sync, re-validate batch.
-  ['s-debit-sort', 's-debit-account', 's-payment-date', 's-seq', 's-location'].forEach((id) =>
+  ['s-debit-sort', 's-debit-account', 's-debtor-iban', 's-debtor-bic', 's-payment-date', 's-seq', 's-location'].forEach((id) =>
     $('#' + id).addEventListener('input', () => {
       readSettingsFromInputs();
       saveSettingsToData();
@@ -518,12 +537,14 @@ function onAddPayment(e) {
     name: $('#f-name').value,
     sortCode: $('#f-sort').value,
     accountNumber: $('#f-account').value,
+    iban: $('#f-iban').value,
+    bic: $('#f-bic').value,
     amount: $('#f-amount').value,
     reference: $('#f-reference').value,
     rti: $('#f-rti').value
   };
 
-  const { errors } = S.validatePayment(p, settings.paymentType, validationFormat());
+  const { errors } = validateRow(p);
   if (errors.length) { toast('Fix before adding: ' + errors[0], true); return; }
 
   batch.push(p);
@@ -542,7 +563,7 @@ function onAddPayment(e) {
 }
 
 function clearForm() {
-  ['f-name', 'f-sort', 'f-account', 'f-amount', 'f-reference', 'f-rti'].forEach((id) => ($('#' + id).value = ''));
+  ['f-name', 'f-sort', 'f-account', 'f-iban', 'f-bic', 'f-amount', 'f-reference', 'f-rti'].forEach((id) => ($('#' + id).value = ''));
   $('#f-save-payee').checked = false;
   $('#payee-picker').value = '';
 }
@@ -559,18 +580,21 @@ function onPickPayee() {
 
 // ----------------------------------------------------------------- render batch
 // The fields rendered as editable cells, in column order.
+// `col` is the column-group class on the <td>, shown/hidden per format.
 const CELLS = [
   { field: 'name', cls: '' },
-  { field: 'sortCode', cls: 'mono' },
-  { field: 'accountNumber', cls: 'mono' },
+  { field: 'sortCode', cls: 'mono', col: 'col-bacs' },
+  { field: 'accountNumber', cls: 'mono', col: 'col-bacs' },
+  { field: 'iban', cls: 'mono', col: 'col-sepa' },
+  { field: 'bic', cls: 'mono', col: 'col-sepa' },
   { field: 'amount', cls: 'num' },
   { field: 'reference', cls: '' },
-  { field: 'rti', cls: 'mono rti-col' }
+  { field: 'rti', cls: 'mono', col: 'rti-col' }
 ];
 
 function cellHtml(p, i, c) {
   const val = esc(p[c.field] == null ? '' : p[c.field]);
-  return `<td class="${c.cls.includes('rti-col') ? 'rti-col' : ''}">
+  return `<td class="${c.col || ''}">
     <input class="cell-input ${c.cls}" data-index="${i}" data-field="${c.field}" value="${val}" />
     <div class="field-msg" data-field="${c.field}"></div>
   </td>`;
@@ -597,13 +621,14 @@ function renderBatch() {
     updateRow(i);
   });
 
-  applyRtiVisibility();
+  applyColumnVisibility();
   updateFooter();
 }
 
 // Validate a row and augment it with a UK modulus check — an amber warning (not
 // a blocking error) when a 6-digit sort code + 8-digit account fail the check.
 function validateRow(p) {
+  if (settings.outputFormat === SEPA) return window.Sepa.validateSepaPayment(p);
   const r = S.validatePayment(p, settings.paymentType, validationFormat());
   const sort = onlyDigits(p.sortCode);
   const acct = onlyDigits(p.accountNumber);
@@ -676,7 +701,7 @@ function updateFooter() {
 
 // Add a blank row and focus its name cell for quick keyboard entry.
 function onAddRow() {
-  batch.push({ name: '', sortCode: '', accountNumber: '', amount: '', reference: '', rti: '' });
+  batch.push({ name: '', sortCode: '', accountNumber: '', iban: '', bic: '', amount: '', reference: '', rti: '' });
   renderBatch();
   const last = $(`#batch-table tbody tr[data-index="${batch.length - 1}"] input[data-field="name"]`);
   if (last) last.focus();
@@ -720,12 +745,28 @@ async function onExport() {
   const stamp = S.toDDMMYYYY(S.todayISO());
 
   if (!batch.length) { toast('Add at least one payment first', true); return; }
-  const problems = S.validateBatch(batch, settings.paymentType, validationFormat()).filter((r) => r.errors.length);
+  const problems = batch.map(validateRow).filter((r) => r.errors.length);
   if (problems.length) { toast('Fix the highlighted errors first', true); return; }
 
   let contents, suggestedName, exportKind;
 
-  if (format === ISO20022) {
+  if (format === SEPA) {
+    const now = new Date();
+    const sepaSettings = {
+      debtorName: settings.fileLocationId || '',
+      debtorIban: settings.debtorIban,
+      debtorBic: settings.debtorBic,
+      requestedExecutionDate: settings.paymentDate,
+      creationDateTime: now.toISOString().slice(0, 19),
+      messageId: ('PB' + now.toISOString().replace(/[^0-9]/g, '').slice(0, 14)
+        + Math.random().toString(36).slice(2, 6).toUpperCase()).slice(0, 35)
+    };
+    const sv = window.Sepa.validateSepaSettings(sepaSettings);
+    if (!sv.valid) { toast('Settings: ' + sv.errors[0], true); return; }
+    contents = window.Sepa.buildSepaPain001(sepaSettings, batch);
+    suggestedName = `sepa-pain001-${stamp}.xml`;
+    exportKind = 'xml';
+  } else if (format === ISO20022) {
     const now = new Date();
     const isoSettings = {
       debtorName: settings.fileLocationId || '',

@@ -146,13 +146,19 @@
           <label data-fmt="BACS_IMPORT STANDARD18 ISO20022">Debit account number
             <input id="s-debit-account" type="text" inputmode="numeric" placeholder="11223344" />
           </label>
-          <label data-fmt="BACS_IMPORT MIXED ISO20022">Payment date <span class="hint">ddmmyyyy</span>
+          <label data-fmt="SEPA">Your IBAN <span class="hint">the account you pay from</span>
+            <input id="s-debtor-iban" type="text" placeholder="DE89 3704 0044 0532 0130 00" />
+          </label>
+          <label data-fmt="SEPA">Your BIC <span class="hint">optional</span>
+            <input id="s-debtor-bic" type="text" placeholder="DEUTDEFF" />
+          </label>
+          <label data-fmt="BACS_IMPORT MIXED ISO20022 SEPA">Payment date <span class="hint">ddmmyyyy</span>
             <input id="s-payment-date" type="date" />
           </label>
           <label data-fmt="BACS_IMPORT">File sequence no. <span class="hint">1–9999, auto</span>
             <input id="s-seq" type="number" min="1" max="9999" />
           </label>
-          <label data-fmt="BACS_IMPORT STANDARD18 ISO20022">Your name <span class="hint">originator / location, optional</span>
+          <label data-fmt="BACS_IMPORT STANDARD18 ISO20022 SEPA">Your name <span class="hint">originator / payer</span>
             <input id="s-location" type="text" placeholder="PAYMENT FILES" />
           </label>
         </div>
@@ -174,7 +180,7 @@
             <label>Beneficiary name
               <input id="f-name" type="text" placeholder="e.g. Acme Ltd" />
             </label>
-            <div class="row">
+            <div class="row" data-fmt="BACS_IMPORT MIXED STANDARD18 ISO20022">
               <label>Sort code
                 <input id="f-sort" type="text" inputmode="numeric" placeholder="12-34-56" />
               </label>
@@ -182,15 +188,21 @@
                 <input id="f-account" type="text" inputmode="numeric" placeholder="12345678" />
               </label>
             </div>
+            <label data-fmt="SEPA">IBAN
+              <input id="f-iban" type="text" placeholder="DE89 3704 0044 0532 0130 00" />
+            </label>
+            <label data-fmt="SEPA">BIC <span class="hint">optional</span>
+              <input id="f-bic" type="text" placeholder="DEUTDEFF" />
+            </label>
             <div class="row">
-              <label>Amount (£)
+              <label>Amount
                 <input id="f-amount" type="text" inputmode="decimal" placeholder="0.00" />
               </label>
               <label>Reference
                 <input id="f-reference" type="text" placeholder="INV-1001" />
               </label>
             </div>
-            <label>RTI reference <span class="hint">optional, HMRC e.g. /123</span>
+            <label data-fmt="BACS_IMPORT">RTI reference <span class="hint">optional, HMRC e.g. /123</span>
               <input id="f-rti" type="text" placeholder="/123" />
             </label>
             <label class="check">
@@ -225,7 +237,9 @@
             <table id="batch-table" class="editable">
               <thead>
                 <tr>
-                  <th>#</th><th>Name</th><th>Sort code</th><th>Account</th>
+                  <th>#</th><th>Name</th>
+                  <th class="col-bacs">Sort code</th><th class="col-bacs">Account</th>
+                  <th class="col-sepa">IBAN</th><th class="col-sepa">BIC</th>
                   <th class="num">Amount</th><th>Reference</th>
                   <th class="rti-col">RTI</th><th>Status</th><th></th>
                 </tr>
@@ -400,6 +414,14 @@
             bar.</p>
           </details>
           <details>
+            <summary>Can I pay in euros (SEPA)?</summary>
+            <p>Yes. Choose the <strong>ISO 20022</strong> bank, then the <strong>SEPA EUR</strong>
+            format. The grid switches to <strong>IBAN / BIC</strong> columns; IBANs are
+            checksum-checked, BIC is optional. The file is SEPA <code>pain.001.001.03</code>.
+            UK domestic (GBP) and SEPA (EUR) are separate formats — do a test upload to
+            confirm your bank's SEPA profile.</p>
+          </details>
+          <details>
             <summary>Which banks are supported?</summary>
             <p><strong>Santander</strong> is available now. <strong>Lloyds, Barclays, HSBC
             and NatWest</strong> are on the roadmap and appear as “coming soon” on the home
@@ -515,6 +537,7 @@
   <script src="santander.js"></script>
   <script src="standard18.js"></script>
   <script src="iso20022.js"></script>
+  <script src="sepa.js"></script>
   <script src="modulus-data.js"></script>
   <script src="modulus.js"></script>
   <script src="renderer.js"></script>

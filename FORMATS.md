@@ -18,7 +18,7 @@ Legend: ✅ supported in PayBatch · ⬜ planned · ⭐ recommended next build
 |--------|-------------------------|----------|-------|
 | **Bank CSV templates** (per-bank) | BACS, Faster Payments, CHAPS, international (varies) | ✅ Santander only | The most widely supported option — but every bank has its own columns. |
 | **Bacs Standard 18** (BACSSTD18) | BACS Direct Credit **+ Faster Payments** | ✅ `src/standard18.js` | Pay.UK fixed-width standard. Accepted by many banks/bureaus. |
-| **ISO 20022 `pain.001`** (XML) | BACS, FPS, CHAPS **(UK domestic GBP)** · SEPA/international planned | ✅ `src/iso20022.js` | `pain.001.001.09`. v1 = UK domestic GBP (sort code + account). |
+| **ISO 20022 `pain.001`** (XML) | UK domestic GBP (BACS/FPS/CHAPS) · **SEPA EUR** · international planned | ✅ `src/iso20022.js` · `src/sepa.js` | UK = `pain.001.001.09` (sort/account); SEPA = `pain.001.001.03` (EUR/IBAN, BIC optional). |
 | **XLSX template** | varies | ⬜ | Used by some fintechs (e.g. Wise). |
 | **SWIFT MT101** (legacy) | cross-border | ❌ not planned | Being retired — NatWest stops accepting MT import **Nov 2025**. |
 | Santander **Bacs import** / **Mixed** (proprietary CSV) | BACS / Faster Payments | ✅ `src/santander.js` | Santander Connect only. |
@@ -50,9 +50,9 @@ Legend: ✅ supported in PayBatch · ⬜ planned · ⭐ recommended next build
 
 1. ✅ **Bacs Standard 18** *(done)* — unlocks BACS/FPS credits across HSBC, Barclays,
    Lloyds, NatWest and Bacs bureaus.
-2. ✅ **ISO 20022 `pain.001.001.09` (XML)** — *v1 done: UK domestic GBP credit transfers.*
-   Unlocks HSBC, Barclays, Lloyds and NatWest. **Next:** add SEPA (IBAN/BIC, EUR) and
-   international / multi-currency.
+2. ✅ **ISO 20022 `pain.001` (XML)** — *done:* UK domestic GBP (`pain.001.001.09`) **and
+   SEPA EUR** (`pain.001.001.03`, IBAN/BIC). Unlocks HSBC, Barclays, Lloyds, NatWest.
+   **Next:** international / multi-currency, SCT Instant.
 3. **Per-bank CSV templates** — start with **Lloyds CBO** (BACS single/multiple +
    Faster Payment CSV) and **Revolut Business** (well-documented templates, large SME base).
 4. ✅ **Santander Connect** CSVs *(done)*.

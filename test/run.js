@@ -12,6 +12,7 @@ const path = require('path');
 const S = require('../src/santander.js');
 const S18 = require('../src/standard18.js');
 const ISO = require('../src/iso20022.js');
+const Sepa = require('../src/sepa.js');
 const Modulus = require('../src/modulus.js');
 const F = S.OUTPUT_FORMATS;
 
@@ -219,6 +220,51 @@ test('Template is valid and re-imports to its example rows', () => {
   assert.strictEqual(S.importPayments(tpl).length, 2);
 });
 
+// ---------------------------------------------------------------- SEPA (pain.001.001.03)
+test('SEPA IBAN check accepts valid IBANs and rejects tampered ones', () => {
+  assert.ok(Sepa.isValidIban('GB82 WEST 1234 5698 7654 32'));
+  assert.ok(Sepa.isValidIban('DE89370400440532013000'));
+  assert.ok(Sepa.isValidIban('FR1420041010050500013M02606'));
+  assert.ok(!Sepa.isValidIban('DE89370400440532013001'));   // tampered check digit
+  assert.ok(!Sepa.isValidIban('GB00WEST12345698765432'));   // bad checksum
+  assert.ok(!Sepa.isValidIban('notaniban'));
+});
+
+test('SEPA BIC check accepts 8/11-char BICs and rejects malformed ones', () => {
+  assert.ok(Sepa.isValidBic('DEUTDEFF'));
+  assert.ok(Sepa.isValidBic('DEUTDEFF500'));
+  assert.ok(!Sepa.isValidBic('DEUT1'));
+  assert.ok(!Sepa.isValidBic('DEUTDEFF5'));   // 9 chars
+});
+
+test('SEPA builds valid pain.001.001.03 with EUR amounts and IBANs', () => {
+  const settings = {
+    debtorName: 'My Co', debtorIban: 'DE89370400440532013000', debtorBic: '',
+    requestedExecutionDate: '2026-06-30', messageId: 'PB1', creationDateTime: '2026-06-27T14:30:00'
+  };
+  const payments = [
+    { name: 'Acme GmbH', iban: 'DE89370400440532013000', bic: 'DEUTDEFF', amount: '150.50', reference: 'INV-1' },
+    { name: 'Béta & Co', iban: 'FR1420041010050500013M02606', bic: '', amount: '87.00', reference: 'R&D' }
+  ];
+  const xml = Sepa.buildSepaPain001(settings, payments);
+  assert.ok(xml.includes('urn:iso:std:iso:20022:tech:xsd:pain.001.001.03'));
+  assert.ok(xml.includes('<Cd>SEPA</Cd>'));
+  assert.ok(xml.includes('<InstdAmt Ccy="EUR">150.50</InstdAmt>'));
+  assert.ok(xml.includes('<IBAN>DE89370400440532013000</IBAN>'));
+  assert.ok(xml.includes('<CtrlSum>237.50</CtrlSum>'));
+  assert.strictEqual((xml.match(/<CdtTrfTxInf>/g) || []).length, 2);
+  assert.ok(xml.includes('Béta &amp; Co'));                 // XML-escaped
+  assert.ok(xml.includes('<Id>NOTPROVIDED</Id>'));          // IBAN-only debtor agent
+});
+
+test('SEPA row validation: name + valid IBAN required, BIC optional', () => {
+  const ok = Sepa.validateSepaPayment({ name: 'X', iban: 'DE89370400440532013000', amount: '10.00' });
+  assert.ok(ok.valid);
+  assert.ok(Sepa.validateSepaPayment({ name: '', iban: 'DE89370400440532013000', amount: '10' }).fieldErrors.name);
+  assert.ok(Sepa.validateSepaPayment({ name: 'X', iban: 'DE0000', amount: '10' }).fieldErrors.iban);
+  assert.ok(Sepa.validateSepaPayment({ name: 'X', iban: 'DE89370400440532013000', bic: 'BAD', amount: '10' }).fieldErrors.bic);
+});
+
 // ---------------------------------------------------------------- modulus check
 // The official VocaLink test cases (the canonical set covering MOD10/MOD11/DBLAL
 // and the exceptions). These prove the algorithm + bundled weight tables.
@@ -261,7 +307,7 @@ test('Modulus check returns checked:false for an unlisted sort code', () => {
 // const/let/class with the same name in two files is a fatal SyntaxError that
 // ESLint can't see (it lints per-file). This guard catches that class of bug.
 test('No top-level const/let/class name collides across browser scripts', () => {
-  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'modulus-data.js', 'modulus.js', 'renderer.js'];
+  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'sepa.js', 'modulus-data.js', 'modulus.js', 'renderer.js'];
   const seen = {};
   const dupes = [];
   for (const f of files) {
