@@ -3,7 +3,7 @@
   <h1>PayBatch</h1>
   <p><strong>A local, offline desktop app that builds and exports your bank's
   bulk-payment import files — replacing the clunky Excel process.</strong></p>
-  <p><em>Supports Santander Connect and Bacs Standard 18. More banks planned.</em></p>
+  <p><em>Santander, HSBC, Barclays, Lloyds, NatWest &amp; more — via Bacs Standard 18, ISO 20022 (UK) and SEPA (EUR).</em></p>
 
   <p>
     <a href="https://victorsaly.github.io/batch-payment-app/"><strong>🌐 Website</strong></a> ·
@@ -25,19 +25,24 @@
 
 ---
 
-Enter payments (or import an Excel/CSV), fix any problems with **inline validation**,
-and export the exact file Santander Connect expects. Everything runs on your own
-machine — **no data ever leaves your computer**, and what's stored is **encrypted**.
+Enter payments (or import/paste from Excel), fix any problems with **inline validation**
+(including a real **UK modulus check**), and export the exact file your bank expects —
+Bacs, ISO 20022 or SEPA. Everything runs on your own machine — **no data ever leaves
+your computer**, and what's stored is **encrypted**.
 
 ## Features
 
-- ✅ **Two output formats** — official **Bacs import** (HEADER/PAYMENT/TRAILER) and the
-  wide **mixed payments** 85-column layout. Both reproduced to the byte.
+- ✅ **Multiple banks & formats** — Santander (Bacs import + mixed payments), plus the
+  cross-bank standards **Bacs Standard 18**, **ISO 20022** (UK domestic GBP) and **SEPA**
+  (euro/IBAN). Pick your bank and the right format is offered. *(Verify with a test
+  upload — formats are built from public specs.)*
+- ✅ **Searchable bank picker** — a grouped, searchable card grid (Available / Coming soon).
+- ✅ **UK modulus check** — the official VocaLink check flags sort code/account
+  combinations that can't be real accounts (likely typos), as an amber warning.
 - ✅ **Inline, per-field validation** — bad cells are highlighted with the reason; the
   Export button stays disabled until everything is clean.
-- ✅ **Editable grid** — type straight into the table, or use the quick-add form.
-- ✅ **Import & template** — load your existing Excel/CSV (columns auto-detected), or grab
-  a ready-made template to fill in.
+- ✅ **Editable grid + paste from Excel** — type straight into the table, paste rows from
+  a spreadsheet, use the quick-add form, or import a CSV (columns auto-detected).
 - ✅ **Saved payees & batch history** — reuse beneficiaries and reload past runs.
 - ✅ **Encrypted local storage** — payees, batches and settings are encrypted with your
   OS keychain (`safeStorage`). Fully offline.
@@ -93,9 +98,16 @@ git push origin v1.0.0
 
 No secrets to configure — it uses the built-in `GITHUB_TOKEN`.
 
-## The two file formats
+## File formats
 
-Pick the **Output format** at the top of the Build batch screen.
+Pick your **bank**, then the **Output format** offered for it. PayBatch can generate:
+
+- **Santander Connect** — Bacs payment import + mixed payments (below)
+- **Bacs Standard 18** — the cross-bank fixed-width credit file
+- **ISO 20022** — `pain.001.001.09` UK domestic GBP (sort code + account)
+- **SEPA** — `pain.001.001.03` euro credit transfers (IBAN/BIC, BIC optional)
+
+The full bank-by-bank matrix is in **[FORMATS.md](FORMATS.md)**. The Santander formats:
 
 ### Bacs import (Santander Connect spec)
 

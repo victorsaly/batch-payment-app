@@ -4,26 +4,31 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## v1.0.4 — 2026-06-27
+
+A big multi-bank, multi-format release.
 
 ### Added
-- **HSBC, Barclays, Lloyds and NatWest are now selectable** — each produces the
-  cross-bank formats we generate (Bacs Standard 18, ISO 20022 UK GBP, and SEPA EUR).
-  Verify with a test upload. More UK banks and fintechs (Revolut, Wise, Tide…) remain
-  on the picker as "coming soon".
-- **SEPA credit transfers** — pay **euros to IBANs** across the EU/EEA. Choose the
-  **ISO 20022** bank, then the **SEPA EUR** format: the grid swaps to IBAN/BIC columns,
-  IBANs are checksum-validated, and the file is `pain.001.001.03` (BIC optional /
-  IBAN-only). Do a test upload to confirm your bank's SEPA profile.
-- **UK modulus checking** — PayBatch now runs the official VocaLink / Pay.UK modulus
-  check on each sort code + account number and shows an **amber warning** when a
-  combination can't be a real account (a likely typo). It's a warning, not a block —
-  you can still export. Validated against VocaLink's official test cases.
-- **ISO 20022 `pain.001` (XML)** — a new cross-bank format (the modern standard used by
-  HSBC, Barclays, Lloyds and NatWest). v1 covers **UK domestic GBP** credit transfers
-  (sort code + account). Pick the **ISO 20022** bank to use it. SEPA/international are
-  planned; do a test upload to confirm your bank's profile before relying on it.
-- New **bank-by-bank format reference** ([FORMATS.md](FORMATS.md)).
+- **10 banks now generate files** — Santander (Bacs import + mixed) plus, via the
+  cross-bank engines below, **HSBC, Barclays, Lloyds, NatWest, TSB, Co-operative and
+  Metro Bank**. Each is marked "verify with a test upload".
+- **ISO 20022 `pain.001` (XML)** — the modern cross-bank standard. UK domestic GBP
+  credit transfers (`pain.001.001.09`, sort code + account).
+- **SEPA credit transfers** — pay **euros to IBANs** across the EU/EEA
+  (`pain.001.001.03`). The grid swaps to **IBAN/BIC** columns, IBANs are
+  checksum-validated, and BIC is optional (IBAN-only).
+- **UK modulus checking** — the official VocaLink / Pay.UK check on every sort code +
+  account number; an **amber warning** flags combinations that can't be real accounts
+  (likely typos). It's a warning, not a block. Validated against VocaLink's official
+  test cases.
+- **Searchable bank picker** — a responsive card grid grouped into **Available** and
+  **Coming soon**, with a search box. Coming-soon tiles for Nationwide and the fintechs
+  (Revolut, Wise, Tide, Starling, Monzo, Currencycloud).
+- **Bank-by-bank format reference** ([FORMATS.md](FORMATS.md)).
+
+### Notes
+- The new formats are best-effort from public specifications (not bank-supplied
+  samples). **Always do one test upload before a real payment run.**
 
 ## v1.0.3 — 2026-06-27
 
