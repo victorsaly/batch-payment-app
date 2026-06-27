@@ -4,6 +4,24 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.0.3 — 2026-06-27
+
+### Added
+- **Privacy at a glance** — Home now shows 🔒 Encrypted · 📴 Works fully offline ·
+  🚫 Never uploaded, making it clear your data stays on your computer.
+- **“Created by Victor Saly”** credit in the footer and Help.
+- Releases now include a **`SHA256SUMS.txt`** so downloads can be verified.
+
+### Changed
+- **Cleaner Home screen** — bank picker on a single row, removed the duplicate logo,
+  tighter, more professional hero.
+- **Bacs Standard 18** is no longer marked Beta.
+
+### Behind the scenes
+- Project is now **public / open source**, with a website and privacy policy.
+- macOS builds are **signing-ready** (hardened runtime + notarization wired); builds
+  stay unsigned until signing certificates are added (see `SIGNING.md`).
+
 ## v1.0.2 — 2026-06-27
 
 ### Added
