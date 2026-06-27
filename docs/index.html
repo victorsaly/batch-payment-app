@@ -40,16 +40,18 @@
 
   <section class="hero" id="top">
     <div class="hero-text">
-      <span class="pill">Free · Local · Open source</span>
+      <span class="pill">For UK businesses uploading Bacs payment files</span>
       <h1>Bulk bank payments,<br />without the spreadsheet.</h1>
       <p>PayBatch turns your payment list into the exact import file your bank expects —
-        validated as you type. It runs entirely on your computer and your data is encrypted,
-        so nothing ever leaves your machine.</p>
+        validated as you type, then exported in one click. It runs entirely on your own
+        computer, so nothing ever leaves your machine.</p>
       <div class="hero-actions">
         <a class="btn primary" href="#download">Download for free</a>
         <a class="btn ghost" href="https://github.com/victorsaly/batch-payment-app" target="_blank" rel="noopener">View on GitHub</a>
       </div>
-      <p class="tiny">macOS · Windows · Linux — no account, no sign-up.</p>
+      <p class="proof">✅ <strong>Works today with:</strong> Santander Connect &amp; Bacs Standard 18 —
+        each reproduced <strong>byte-for-byte</strong> from the bank's own import spec.</p>
+      <p class="tiny">Free · open source · macOS · Windows · Linux — no account, no sign-up.</p>
     </div>
 
     <div class="preview">
@@ -58,8 +60,8 @@
   </section>
 
   <section class="strip">
-    <div><strong>🔒 Encrypted</strong> on your machine</div>
-    <div><strong>📴 Fully offline</strong> — no data sent anywhere</div>
+    <div><strong>🔒 Stays on your computer</strong> — encrypted, never uploaded</div>
+    <div><strong>📴 Fully offline</strong> — no account, no cloud</div>
     <div><strong>⚡ Validated</strong> before your bank sees it</div>
     <div><strong>£0</strong> — free &amp; open source</div>
   </section>
@@ -70,7 +72,7 @@
       <div class="card"><div class="ico">🏦</div><h3>Multiple bank formats</h3><p>Santander Connect (Bacs import &amp; mixed payments) and cross-bank Bacs Standard 18 — reproduced to the byte.</p></div>
       <div class="card"><div class="ico">✅</div><h3>Inline validation</h3><p>Every cell is checked live. Bad sort codes, accounts and amounts are flagged before export, so the bank won't reject your file.</p></div>
       <div class="card"><div class="ico">📋</div><h3>Paste from Excel</h3><p>Copy your rows in Excel or Google Sheets and paste straight in — columns are detected automatically.</p></div>
-      <div class="card"><div class="ico">🔐</div><h3>Encrypted &amp; offline</h3><p>Payees, batches and settings are encrypted with your OS keychain. PayBatch makes no network calls except an update check.</p></div>
+      <div class="card"><div class="ico">🔐</div><h3>Private by design</h3><p>In plain terms: your payees and bank details are scrambled and locked to your computer, so other apps can't read them and they never go online. PayBatch only ever reaches the internet to check for an update.</p></div>
       <div class="card"><div class="ico">👥</div><h3>Saved payees &amp; history</h3><p>Reuse beneficiaries and reload past runs in a click. No more hunting through old spreadsheets.</p></div>
       <div class="card"><div class="ico">⬆️</div><h3>Auto update &amp; changelog</h3><p>A gentle banner tells you when a new version ships, with a full changelog inside the app.</p></div>
     </div>
@@ -107,6 +109,29 @@
     </div>
   </section>
 
+  <section class="fit" id="fit">
+    <h2>Is PayBatch right for you?</h2>
+    <p class="sub">We'd rather be honest than oversell. Here's the straight version.</p>
+    <div class="fit-grid">
+      <div class="fit-card good">
+        <h3>✅ A great fit if you…</h3>
+        <ul>
+          <li>Run UK Bacs / bulk payments through <strong>Santander Connect</strong> or a <strong>Standard 18</strong> upload</li>
+          <li>Currently hand-build payment files in Excel and want fewer errors</li>
+          <li>Want your beneficiary &amp; bank data to stay on your own machine</li>
+        </ul>
+      </div>
+      <div class="fit-card bad">
+        <h3>⏳ Not ready yet if you…</h3>
+        <ul>
+          <li>Need <strong>Lloyds, Barclays, HSBC or NatWest</strong> — these are coming, not live</li>
+          <li>Need ISO 20022 / pain.001 XML, or Direct Debit collection files</li>
+          <li>Need a different bank's exact format — <a href="https://github.com/victorsaly/batch-payment-app/issues" target="_blank" rel="noopener">tell us</a> and we'll prioritise it</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
   <section class="download" id="download">
     <h2>Download PayBatch</h2>
     <p class="sub">Free for macOS, Windows and Linux. Pick your platform:</p>
@@ -121,8 +146,14 @@
         <strong>Linux</strong><span>.AppImage / .deb</span>
       </a>
     </div>
-    <p class="note">First launch: macOS → right-click the app → <em>Open</em>. Windows → <em>More info → Run anyway</em>
-       (the app isn't code-signed yet).</p>
+    <div class="reassure">
+      <p><strong>“Is it safe to open?”</strong> Yes. PayBatch is free and fully open source — you can
+      read every line on GitHub. It isn't code-signed with a paid certificate yet, so on first
+      launch your OS may show a routine warning (normal for independent apps):</p>
+      <p class="steps-inline"><span>🍎 <strong>macOS:</strong> right-click the app → <em>Open</em> → <em>Open</em>.</span>
+        <span>🪟 <strong>Windows:</strong> <em>More info</em> → <em>Run anyway</em>.</span></p>
+      <p class="tiny">Code signing is on the roadmap to remove these prompts entirely.</p>
+    </div>
   </section>
 
   <footer class="foot">
