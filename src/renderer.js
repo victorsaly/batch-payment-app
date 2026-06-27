@@ -93,21 +93,26 @@ function saveSettingsToData() {
 }
 
 const STANDARD18 = 'STANDARD18';
+const ISO20022 = 'ISO20022';
 const FORMAT_LABELS = {
   BACS_IMPORT: 'Bacs import (.txt)',
   MIXED: 'Mixed payments (.txt)',
-  STANDARD18: 'Standard 18 (.txt)'
+  STANDARD18: 'Standard 18 (.txt)',
+  ISO20022: 'ISO 20022 (.xml)'
 };
 const EXPORT_LABELS = {
   BACS_IMPORT: 'Export Bacs file (.txt)',
   MIXED: 'Export Mixed file (.txt)',
-  STANDARD18: 'Export Standard 18 (.txt)'
+  STANDARD18: 'Export Standard 18 (.txt)',
+  ISO20022: 'Export ISO 20022 (.xml)'
 };
 
-// Standard 18 has no MULTIBACS/reference rules of its own — validate its rows
-// like the mixed format (name/sort/account/amount required, reference optional).
+// Standard 18 and ISO 20022 have no MULTIBACS/reference rules of their own —
+// validate their rows like the mixed format (name/sort/account/amount required,
+// reference optional).
 function validationFormat() {
-  return settings.outputFormat === STANDARD18 ? S.OUTPUT_FORMATS.MIXED : settings.outputFormat;
+  return (settings.outputFormat === STANDARD18 || settings.outputFormat === ISO20022)
+    ? S.OUTPUT_FORMATS.MIXED : settings.outputFormat;
 }
 
 // Rebuild the format toggle from the selected bank's available formats.
@@ -349,7 +354,9 @@ function readSettingsFromInputs() {
 
 function updateMultiNote() {
   const note = $('#multi-note');
-  if (settings.outputFormat === STANDARD18) {
+  if (settings.outputFormat === ISO20022) {
+    note.innerHTML = '<strong>ISO 20022 (pain.001):</strong> modern XML credit transfers from your account. <strong>UK domestic GBP only for now</strong> (SEPA/international coming). Each bank uses its own profile — <strong>do a test upload before relying on it.</strong>';
+  } else if (settings.outputFormat === STANDARD18) {
     note.textContent = 'Standard 18: fixed-width Bacs credit records using your account as the originator. Some banks also require tape-label records — check your bank’s upload guidance.';
   } else if (settings.outputFormat === S.OUTPUT_FORMATS.MIXED) {
     note.textContent = 'Mixed payments: one row per payment, no header/trailer. Only a payment date and the beneficiary rows are needed. Do a test upload to confirm acceptance.';
@@ -699,9 +706,25 @@ async function onExport() {
   const problems = S.validateBatch(batch, settings.paymentType, validationFormat()).filter((r) => r.errors.length);
   if (problems.length) { toast('Fix the highlighted errors first', true); return; }
 
-  let contents, suggestedName;
+  let contents, suggestedName, exportKind;
 
-  if (format === STANDARD18) {
+  if (format === ISO20022) {
+    const now = new Date();
+    const isoSettings = {
+      debtorName: settings.fileLocationId || '',
+      debtorSort: settings.debitSortCode,
+      debtorAccount: settings.debitAccountNumber,
+      requestedExecutionDate: settings.paymentDate,
+      creationDateTime: now.toISOString().slice(0, 19),
+      messageId: ('PB' + now.toISOString().replace(/[^0-9]/g, '').slice(0, 14)
+        + Math.random().toString(36).slice(2, 6).toUpperCase()).slice(0, 35)
+    };
+    const sv = window.ISO20022.validateIso20022Settings(isoSettings);
+    if (!sv.valid) { toast('Settings: ' + sv.errors[0], true); return; }
+    contents = window.ISO20022.buildPain001(isoSettings, batch);
+    suggestedName = `iso20022-pain001-${stamp}.xml`;
+    exportKind = 'xml';
+  } else if (format === STANDARD18) {
     const s18 = {
       originatorSort: settings.debitSortCode,
       originatorAccount: settings.debitAccountNumber,
@@ -722,7 +745,7 @@ async function onExport() {
       : `santander-bacs-${stamp}-seq${seq}.txt`;
   }
 
-  const res = await withBusy($('#export-btn'), () => window.api.exportFile({ suggestedName, contents }));
+  const res = await withBusy($('#export-btn'), () => window.api.exportFile({ suggestedName, contents, kind: exportKind }));
   if (res && res.saved) {
     if (format === S.OUTPUT_FORMATS.BACS_IMPORT) {
       // Bacs import files carry a unique sequence number — advance it.

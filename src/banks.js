@@ -30,6 +30,15 @@ const BANKS = [
     note: 'Bacs Standard 18 — the cross-bank fixed-width credit file accepted by many UK banks and bureaus.'
   },
   {
+    id: 'iso20022',
+    name: 'ISO 20022',
+    color: '#1f6f6f',
+    initial: 'XML',
+    status: 'available',
+    formats: ['ISO20022'],
+    note: 'ISO 20022 pain.001 (XML) — the modern cross-bank standard (HSBC, Barclays, Lloyds, NatWest). UK domestic GBP only for now; verify with your bank.'
+  },
+  {
     id: 'lloyds',
     name: 'Lloyds',
     color: '#024731',

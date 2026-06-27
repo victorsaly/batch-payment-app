@@ -140,19 +140,19 @@
         </div>
 
         <div class="settings-grid">
-          <label data-fmt="BACS_IMPORT STANDARD18">Debit sort code <span class="hint">your account</span>
+          <label data-fmt="BACS_IMPORT STANDARD18 ISO20022">Debit sort code <span class="hint">your account</span>
             <input id="s-debit-sort" type="text" inputmode="numeric" placeholder="09-01-22" />
           </label>
-          <label data-fmt="BACS_IMPORT STANDARD18">Debit account number
+          <label data-fmt="BACS_IMPORT STANDARD18 ISO20022">Debit account number
             <input id="s-debit-account" type="text" inputmode="numeric" placeholder="11223344" />
           </label>
-          <label data-fmt="BACS_IMPORT MIXED">Payment date <span class="hint">ddmmyyyy</span>
+          <label data-fmt="BACS_IMPORT MIXED ISO20022">Payment date <span class="hint">ddmmyyyy</span>
             <input id="s-payment-date" type="date" />
           </label>
           <label data-fmt="BACS_IMPORT">File sequence no. <span class="hint">1–9999, auto</span>
             <input id="s-seq" type="number" min="1" max="9999" />
           </label>
-          <label data-fmt="BACS_IMPORT STANDARD18">Your name <span class="hint">originator / location, optional</span>
+          <label data-fmt="BACS_IMPORT STANDARD18 ISO20022">Your name <span class="hint">originator / location, optional</span>
             <input id="s-location" type="text" placeholder="PAYMENT FILES" />
           </label>
         </div>
@@ -506,6 +506,7 @@
   <script src="banks.js"></script>
   <script src="santander.js"></script>
   <script src="standard18.js"></script>
+  <script src="iso20022.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

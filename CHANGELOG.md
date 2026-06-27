@@ -4,6 +4,15 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+- **ISO 20022 `pain.001` (XML)** — a new cross-bank format (the modern standard used by
+  HSBC, Barclays, Lloyds and NatWest). v1 covers **UK domestic GBP** credit transfers
+  (sort code + account). Pick the **ISO 20022** bank to use it. SEPA/international are
+  planned; do a test upload to confirm your bank's profile before relying on it.
+- New **bank-by-bank format reference** ([FORMATS.md](FORMATS.md)).
+
 ## v1.0.3 — 2026-06-27
 
 ### Added

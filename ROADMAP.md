@@ -14,6 +14,7 @@ entry in the bank registry ([`src/banks.js`](src/banks.js)).
 |------|---------|-----------|
 | ✅ **Santander** | Santander Connect | Bacs payment import (HEADER/PAYMENT/TRAILER) · Mixed payments (85-column CSV) |
 | ✅ **Bacs Standard 18** | Cross-bank | Fixed-width credit records (transaction code 99). Tape-label wrappers (VOL1/HDR/UHL1/UTL1/EOF) not emitted — add per your bank's guidance if required. |
+| ✅ **ISO 20022** | Cross-bank | `pain.001.001.09` XML credit transfers — **UK domestic GBP** (sort code + account). SEPA/international planned. Verify with a test upload. |
 
 ## Which banks & formats next
 
@@ -24,8 +25,8 @@ Build priority from there:
 
 1. ✅ **Bacs Standard 18** *(done)* — unlocks BACS/FPS credits across HSBC, Barclays,
    Lloyds, NatWest and Bacs bureaus.
-2. ⭐ **ISO 20022 `pain.001.001.09` (XML)** — highest leverage: one format unlocks
-   CHAPS / SEPA / international across HSBC, Barclays, Lloyds and NatWest.
+2. ✅ **ISO 20022 `pain.001.001.09` (XML)** — *v1 done: UK domestic GBP.* Next: SEPA
+   (IBAN/BIC, EUR) + international / multi-currency.
 3. **Per-bank CSV templates** — starting with Lloyds CBO and Revolut Business.
 
 ## Other planned improvements

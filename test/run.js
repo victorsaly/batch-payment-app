@@ -11,6 +11,7 @@ const path = require('path');
 
 const S = require('../src/santander.js');
 const S18 = require('../src/standard18.js');
+const ISO = require('../src/iso20022.js');
 const F = S.OUTPUT_FORMATS;
 
 let passed = 0;
@@ -110,6 +111,49 @@ test('Standard 18 file: one CRLF-terminated 100-char line per payment', () => {
   assert.ok(lines.every((l) => l.length === 100));
 });
 
+// ---------------------------------------------------------------- ISO 20022 (pain.001)
+test('ISO 20022 builds valid pain.001.001.09 with correct header totals', () => {
+  const settings = {
+    debtorName: 'My Company Ltd', debtorSort: '090122', debtorAccount: '11223344',
+    requestedExecutionDate: '2026-06-30', messageId: 'PB-TEST-1', creationDateTime: '2026-06-27T14:30:00'
+  };
+  const payments = [
+    { name: 'Acme Ltd', sortCode: '12-34-56', accountNumber: '12345678', amount: '150.50', reference: 'INV-1001' },
+    { name: 'Blue Oak Ltd', sortCode: '654321', accountNumber: '87654321', amount: '87.00', reference: 'WAGES' }
+  ];
+  const xml = ISO.buildPain001(settings, payments);
+  assert.ok(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>'));
+  assert.ok(xml.includes('urn:iso:std:iso:20022:tech:xsd:pain.001.001.09'));
+  assert.strictEqual((xml.match(/<NbOfTxs>2<\/NbOfTxs>/g) || []).length, 2); // GrpHdr + PmtInf
+  assert.ok(xml.includes('<CtrlSum>237.50</CtrlSum>'));
+  assert.strictEqual((xml.match(/<CdtTrfTxInf>/g) || []).length, 2);
+  assert.strictEqual((xml.match(/<CdtTrfTxInf>/g) || []).length, (xml.match(/<\/CdtTrfTxInf>/g) || []).length);
+});
+
+test('ISO 20022 places UK sort code + account and amount correctly', () => {
+  const settings = { debtorName: 'X Ltd', debtorSort: '090122', debtorAccount: '11223344', requestedExecutionDate: '2026-06-30', messageId: 'M', creationDateTime: '2026-06-27T00:00:00' };
+  const xml = ISO.buildPain001(settings, [{ name: 'Acme', sortCode: '123456', accountNumber: '12345678', amount: '10.5', reference: 'R' }]);
+  assert.ok(xml.includes('<Cd>GBDSC</Cd>'));
+  assert.ok(xml.includes('<MmbId>123456</MmbId>'));      // creditor sort
+  assert.ok(xml.includes('<MmbId>090122</MmbId>'));      // debtor sort
+  assert.ok(xml.includes('<Id>12345678</Id>'));          // creditor account
+  assert.ok(xml.includes('<InstdAmt Ccy="GBP">10.50</InstdAmt>'));
+});
+
+test('ISO 20022 XML-escapes names and references', () => {
+  const settings = { debtorName: 'A & B', debtorSort: '090122', debtorAccount: '11223344', requestedExecutionDate: '2026-06-30', messageId: 'M', creationDateTime: '2026-06-27T00:00:00' };
+  const xml = ISO.buildPain001(settings, [{ name: 'R&D <Co>', sortCode: '123456', accountNumber: '12345678', amount: '5', reference: 'A & "B"' }]);
+  assert.ok(xml.includes('<Nm>R&amp;D &lt;Co&gt;</Nm>'));
+  assert.ok(xml.includes('A &amp; &quot;B&quot;'));
+  assert.ok(!/<Nm>[^<]*&(?!amp;|lt;|gt;|quot;|apos;)/.test(xml)); // no raw unescaped &
+});
+
+test('ISO 20022 settings validation: debtor sort 6, account 8, name required', () => {
+  assert.ok(ISO.validateIso20022Settings({ debtorName: 'X', debtorSort: '090122', debtorAccount: '11223344' }).valid);
+  assert.ok(!ISO.validateIso20022Settings({ debtorName: '', debtorSort: '090122', debtorAccount: '11223344' }).valid);
+  assert.ok(!ISO.validateIso20022Settings({ debtorName: 'X', debtorSort: '0901', debtorAccount: '11223344' }).valid);
+});
+
 // ---------------------------------------------------------------- validation
 test('Field-level errors map to the offending field', () => {
   const r = S.validatePayment(
@@ -172,6 +216,26 @@ test('Template is valid and re-imports to its example rows', () => {
   const tpl = S.buildTemplate();
   assert.ok(tpl.startsWith('Beneficiary Name,Sort Code,Account Number,Amount,Reference'));
   assert.strictEqual(S.importPayments(tpl).length, 2);
+});
+
+// ---------------------------------------------------------------- safety net
+// The src/*.js browser scripts share one global scope at runtime, so a top-level
+// const/let/class with the same name in two files is a fatal SyntaxError that
+// ESLint can't see (it lints per-file). This guard catches that class of bug.
+test('No top-level const/let/class name collides across browser scripts', () => {
+  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'renderer.js'];
+  const seen = {};
+  const dupes = [];
+  for (const f of files) {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'src', f), 'utf8');
+    const names = (src.match(/^(?:const|let|class)\s+([A-Za-z_$][\w$]*)/gm) || [])
+      .map((m) => m.replace(/^(?:const|let|class)\s+/, ''));
+    for (const n of names) {
+      if (seen[n]) dupes.push(`${n} (${seen[n]} & ${f})`);
+      else seen[n] = f;
+    }
+  }
+  assert.strictEqual(dupes.length, 0, 'Duplicate top-level declarations: ' + dupes.join(', '));
 });
 
 // ---------------------------------------------------------------- run

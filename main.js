@@ -139,9 +139,14 @@ ipcMain.handle('data:status', () => ({
 // opts: { suggestedName, contents, kind: 'bacs' | 'mixed' | 'template', openAfter }
 ipcMain.handle('file:export', async (_evt, opts) => {
   const { suggestedName, contents, kind, openAfter } = opts || {};
-  const filters = kind === 'template'
-    ? [{ name: 'CSV file', extensions: ['csv'] }, { name: 'All files', extensions: ['*'] }]
-    : [{ name: 'Payment file', extensions: ['txt'] }, { name: 'All files', extensions: ['*'] }];
+  let filters;
+  if (kind === 'template') {
+    filters = [{ name: 'CSV file', extensions: ['csv'] }, { name: 'All files', extensions: ['*'] }];
+  } else if (kind === 'xml') {
+    filters = [{ name: 'XML file', extensions: ['xml'] }, { name: 'All files', extensions: ['*'] }];
+  } else {
+    filters = [{ name: 'Payment file', extensions: ['txt'] }, { name: 'All files', extensions: ['*'] }];
+  }
 
   const { canceled, filePath } = await dialog.showSaveDialog({
     title: kind === 'template' ? 'Save import template' : 'Export payment file',
