@@ -73,6 +73,102 @@ const BANKS = [
     status: 'coming-soon',
     formats: [],
     note: 'NatWest Bankline — Bacs Standard 18, Bankline CSV, and ISO 20022 XML (pain.001.001.09).'
+  },
+
+  // --- more UK high-street banks (planned) ---
+  {
+    id: 'tsb',
+    name: 'TSB',
+    color: '#1c3f94',
+    initial: 'TSB',
+    status: 'coming-soon',
+    formats: [],
+    note: 'TSB — Bacs Standard 18 and CSV (varies).'
+  },
+  {
+    id: 'coop',
+    name: 'Co-operative',
+    color: '#00a1de',
+    initial: 'Co',
+    status: 'coming-soon',
+    formats: [],
+    note: 'The Co-operative Bank — Bacs Standard 18 and CSV.'
+  },
+  {
+    id: 'nationwide',
+    name: 'Nationwide',
+    color: '#15144b',
+    initial: 'NW',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Nationwide — Bacs Standard 18 / CSV (business).'
+  },
+  {
+    id: 'metro',
+    name: 'Metro Bank',
+    color: '#002d72',
+    initial: 'M',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Metro Bank — Bacs Standard 18 and CSV.'
+  },
+
+  // --- fintech / business accounts (planned) ---
+  {
+    id: 'revolut',
+    name: 'Revolut',
+    color: '#0666eb',
+    initial: 'R',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Revolut Business — CSV template, XML, and BACS-format (up to ~1,000 entries/file).'
+  },
+  {
+    id: 'wise',
+    name: 'Wise',
+    color: '#163300',
+    initial: 'W',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Wise — CSV and XLSX batch templates (Faster Payments + international).'
+  },
+  {
+    id: 'tide',
+    name: 'Tide',
+    color: '#4050ff',
+    initial: 'T',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Tide — bulk payment CSV (where supported).'
+  },
+  {
+    id: 'starling',
+    name: 'Starling',
+    color: '#6935d3',
+    initial: 'St',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Starling Bank — bulk payments (limited; verify).'
+  },
+  {
+    id: 'monzo',
+    name: 'Monzo',
+    color: '#14233c',
+    initial: 'Mo',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Monzo Business — bulk payments (limited; verify).'
+  },
+
+  // --- international / multi-currency (planned) ---
+  {
+    id: 'currencycloud',
+    name: 'Currencycloud',
+    color: '#2b3a8c',
+    initial: 'Cc',
+    status: 'coming-soon',
+    formats: [],
+    note: 'Currencycloud — CSV bulk upload (SEPA / international).'
   }
 ];
 

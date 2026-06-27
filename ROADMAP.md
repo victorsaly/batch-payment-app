@@ -21,6 +21,12 @@ entry in the bank registry ([`src/banks.js`](src/banks.js)).
 The full bank-by-bank matrix of accepted formats (high-street banks **and**
 fintechs like Revolut/Wise) and what PayBatch supports lives in **[FORMATS.md](FORMATS.md)**.
 
+The app's **bank picker** already lists these as *coming soon*:
+
+- **High-street:** Lloyds · Barclays · HSBC · NatWest · TSB · Co-operative · Nationwide · Metro Bank
+- **Fintech / business:** Revolut · Wise · Tide · Starling · Monzo
+- **International:** Currencycloud
+
 Build priority from there:
 
 1. ✅ **Bacs Standard 18** *(done)* — unlocks BACS/FPS credits across HSBC, Barclays,
@@ -29,12 +35,14 @@ Build priority from there:
    IBAN/BIC). Next: international / multi-currency, SCT Instant.
 3. **Per-bank CSV templates** — starting with Lloyds CBO and Revolut Business.
 
+## Done recently
+
+- ✅ **UK modulus check** (VocaLink weight tables) — flags sort code/account
+  combinations that can't be real accounts. ✅ **SEPA** euro credit transfers.
+
 ## Other planned improvements
 
 - Official bank **logos** on the picker (currently brand-coloured initial tiles).
-- **UK modulus check** (Vocalink weight tables) to validate that a sort code +
-  account number combination is actually a possible account — catches typos that
-  pass the digit-count check.
 - **Auto-update** (download & install in-app) once the app is code-signed.
 - Optional **CSV column-mapping** screen for arbitrary spreadsheet layouts.
 
