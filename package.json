@@ -1,0 +1,83 @@
+{
+  "name": "batch-payment-app",
+  "productName": "Santander Batch Payment",
+  "version": "1.0.0",
+  "description": "Local, offline desktop app to build and export Santander Connect Bacs / mixed bulk-payment import files — replacing the clunky Excel process.",
+  "main": "main.js",
+  "author": "Victor Saly <info@victorsaly.com>",
+  "license": "MIT",
+  "private": true,
+  "homepage": "https://github.com/victorsaly/batch-payment-app#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/victorsaly/batch-payment-app.git"
+  },
+  "bugs": {
+    "url": "https://github.com/victorsaly/batch-payment-app/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/run.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux",
+    "release": "electron-builder --publish always"
+  },
+  "build": {
+    "appId": "com.victorsaly.batchpayment",
+    "productName": "Santander Batch Payment",
+    "copyright": "Copyright © 2026 Victor Saly",
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "victorsaly",
+        "repo": "batch-payment-app"
+      }
+    ],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "icon": "build/icon.icns",
+      "category": "public.app-category.finance",
+      "identity": null
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
+    },
+    "win": {
+      "target": ["nsis"],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Santander Batch Payment"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "build/icon.png",
+      "category": "Finance",
+      "maintainer": "Victor Saly <info@victorsaly.com>"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

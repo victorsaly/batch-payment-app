@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self';" />
+  <title>Santander Batch Payment</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img class="logo" src="logo.svg" alt="Santander Batch Payment logo" />
+      <div>
+        <h1>Santander Batch Payment</h1>
+        <p class="sub">Build a Bacs payment run and export the import file your bank expects</p>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-view="batch">Build batch</button>
+      <button class="tab" data-view="payees">Saved payees</button>
+      <button class="tab" data-view="history">History</button>
+      <button class="tab" data-view="help">Help</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ===================== BUILD BATCH VIEW ===================== -->
+    <section id="view-batch" class="view active">
+      <!-- File-level settings required by the Santander Bacs import format -->
+      <div class="card settings-card">
+        <div class="card-head">
+          <h2>Payment run settings</h2>
+          <div class="seg" id="format-seg">
+            <button type="button" class="seg-btn active" data-format="BACS_IMPORT">Bacs import (.txt)</button>
+            <button type="button" class="seg-btn" data-format="MIXED">Mixed payments (.txt)</button>
+          </div>
+        </div>
+
+        <div class="ptype-row bacs-only">
+          <span class="hint">Payment type</span>
+          <div class="seg" id="ptype-seg">
+            <button type="button" class="seg-btn active" data-ptype="BACS">Single (BACS)</button>
+            <button type="button" class="seg-btn" data-ptype="MULTIBACS">Multiple (MULTIBACS)</button>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          <label class="bacs-only">Debit sort code <span class="hint">your account</span>
+            <input id="s-debit-sort" type="text" inputmode="numeric" placeholder="09-01-22" />
+          </label>
+          <label class="bacs-only">Debit account number
+            <input id="s-debit-account" type="text" inputmode="numeric" placeholder="11223344" />
+          </label>
+          <label>Payment date <span class="hint">ddmmyyyy</span>
+            <input id="s-payment-date" type="date" />
+          </label>
+          <label class="bacs-only">File sequence no. <span class="hint">1–9999, auto</span>
+            <input id="s-seq" type="number" min="1" max="9999" />
+          </label>
+          <label class="bacs-only">File location ID <span class="hint">optional</span>
+            <input id="s-location" type="text" placeholder="PAYMENT FILES" />
+          </label>
+        </div>
+        <p class="settings-note" id="multi-note"></p>
+      </div>
+
+      <div class="grid">
+        <!-- Left: add a payment -->
+        <div class="card">
+          <h2>Add a payment</h2>
+
+          <label>Quick add from saved payee
+            <select id="payee-picker">
+              <option value="">— choose a saved payee —</option>
+            </select>
+          </label>
+
+          <form id="payment-form" autocomplete="off">
+            <label>Beneficiary name
+              <input id="f-name" type="text" placeholder="e.g. Acme Ltd" />
+            </label>
+            <div class="row">
+              <label>Sort code
+                <input id="f-sort" type="text" inputmode="numeric" placeholder="12-34-56" />
+              </label>
+              <label>Account number
+                <input id="f-account" type="text" inputmode="numeric" placeholder="12345678" />
+              </label>
+            </div>
+            <div class="row">
+              <label>Amount (£)
+                <input id="f-amount" type="text" inputmode="decimal" placeholder="0.00" />
+              </label>
+              <label>Reference
+                <input id="f-reference" type="text" placeholder="INV-1001" />
+              </label>
+            </div>
+            <label>RTI reference <span class="hint">optional, HMRC e.g. /123</span>
+              <input id="f-rti" type="text" placeholder="/123" />
+            </label>
+            <label class="check">
+              <input id="f-save-payee" type="checkbox" /> Also save this payee for next time
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Add to batch</button>
+              <button type="button" id="clear-form" class="btn ghost">Clear</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: the batch -->
+        <div class="card grow">
+          <div class="card-head">
+            <h2>Current batch <span class="hint">cells are editable — fix errors in place</span></h2>
+            <div class="head-actions">
+              <button id="add-row" class="btn ghost">+ Add row</button>
+              <button id="import-btn" class="btn ghost">Import…</button>
+              <button id="template-btn" class="btn ghost">Template</button>
+              <button id="clear-batch" class="btn ghost danger">Clear</button>
+            </div>
+          </div>
+
+          <div id="batch-empty" class="empty">
+            No payments yet. Add one on the left, click <strong>+ Add row</strong>,
+            or <strong>Import</strong> a CSV (grab the <strong>Template</strong> first).
+          </div>
+
+          <div id="batch-table-wrap" class="table-wrap hidden">
+            <table id="batch-table" class="editable">
+              <thead>
+                <tr>
+                  <th>#</th><th>Name</th><th>Sort code</th><th>Account</th>
+                  <th class="num">Amount</th><th>Reference</th>
+                  <th class="rti-col">RTI</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="batch-footer">
+            <div class="totals">
+              <span><strong id="count">0</strong> payments</span>
+              <span>Total <strong id="total">£0.00</strong></span>
+              <span id="error-summary" class="badge"></span>
+            </div>
+            <div class="export-actions">
+              <button id="save-batch" class="btn ghost">Save batch</button>
+              <button id="export-btn" class="btn primary">Export Bacs file (.txt)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PAYEES VIEW ===================== -->
+    <section id="view-payees" class="view">
+      <div class="card">
+        <div class="card-head">
+          <h2>Saved payees</h2>
+          <button id="add-payee" class="btn primary">+ New payee</button>
+        </div>
+        <div id="payees-empty" class="empty">No saved payees yet.</div>
+        <div class="table-wrap">
+          <table id="payees-table" class="hidden">
+            <thead>
+              <tr><th>Name</th><th>Sort code</th><th>Account</th><th>Default reference</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HISTORY VIEW ===================== -->
+    <section id="view-history" class="view">
+      <div class="card">
+        <h2>Saved batches</h2>
+        <div id="history-empty" class="empty">No saved batches yet.</div>
+        <div class="table-wrap">
+          <table id="history-table" class="hidden">
+            <thead>
+              <tr><th>Saved</th><th>Payments</th><th class="num">Total</th><th></th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== HELP VIEW ===================== -->
+    <section id="view-help" class="view">
+      <div class="card docs">
+        <h2>How to use this app</h2>
+
+        <h3>1. Choose your output format</h3>
+        <p>At the top of <strong>Build batch</strong>, pick the format Santander expects:</p>
+        <ul>
+          <li><strong>Bacs import (.txt)</strong> — Santander Connect's official Bacs
+            payment import file. Needs your debit account, a payment date, and a file
+            sequence number. Choose <em>Single (BACS)</em> for one or more independent
+            payments, or <em>Multiple (MULTIBACS)</em> when every payment shares one
+            debit account and date (reference then becomes mandatory).</li>
+          <li><strong>Mixed payments (.txt)</strong> — the wide 85-column layout. Only a
+            payment date and the beneficiary rows are needed.</li>
+        </ul>
+
+        <h3>2. Add payments</h3>
+        <ul>
+          <li>Use the <strong>Add a payment</strong> form on the left, or pick a
+            <strong>saved payee</strong> to auto-fill it.</li>
+          <li>Click <strong>+ Add row</strong> to type straight into the table.</li>
+          <li>Click <strong>Import…</strong> to load a CSV (e.g. an Excel export).
+            Click <strong>Template</strong> first to get a correctly-formatted file to
+            fill in.</li>
+        </ul>
+
+        <h3>3. Fix any errors inline</h3>
+        <p>Every cell in the table is editable. Invalid cells are outlined in
+        <span class="docs-err">red</span> with the reason shown underneath; cells that
+        will be auto-adjusted are flagged in <span class="docs-warn">amber</span>. The
+        <strong>Export</strong> button stays disabled until every row is valid.</p>
+
+        <h3>4. Export</h3>
+        <p>Click <strong>Export</strong>, choose where to save, and the file opens
+        automatically so you can eyeball it before uploading to Santander Connect.</p>
+
+        <h3>Validation rules</h3>
+        <table class="docs-table">
+          <thead><tr><th>Field</th><th>Rule</th></tr></thead>
+          <tbody>
+            <tr><td>Beneficiary name</td><td>Required. Bacs: uppercased, max 35 (first 18 reach Bacs). Allowed: A–Z 0–9 . - / &amp; space.</td></tr>
+            <tr><td>Sort code</td><td>Exactly 6 digits (dashes/spaces are ignored).</td></tr>
+            <tr><td>Account number</td><td>Exactly 8 digits.</td></tr>
+            <tr><td>Amount</td><td>Greater than 0, pounds &amp; pence (e.g. 150.50).</td></tr>
+            <tr><td>Reference</td><td>Max 18 chars. Mandatory for MULTIBACS; optional otherwise.</td></tr>
+            <tr><td>RTI reference</td><td>Bacs only, optional. Starts with “/”, e.g. /123.</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Your data is encrypted</h3>
+        <p id="docs-storage">Payees, saved batches and settings are stored only on this
+        computer, encrypted with your operating-system keychain. Nothing is ever sent
+        over the internet.</p>
+
+        <h3>Important</h3>
+        <p>Always do one small <strong>test upload</strong> in Santander Connect to confirm
+        a format is accepted before relying on it for a full payment run.</p>
+
+        <h3>Disclaimer</h3>
+        <p>This is an independent tool and is <strong>not affiliated with, endorsed by, or
+        supported by Santander</strong>. It is provided “as is”, without warranty of any kind.
+        You are responsible for checking that every beneficiary, sort code, account number,
+        amount and reference is correct before submitting a payment file to your bank.
+        Always reconcile the on-screen total against your records.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="statusbar">
+    <span id="storage-path">Data stored locally on this computer</span>
+    <span id="toast" class="toast"></span>
+  </footer>
+
+  <!-- Simple modal for editing a payee -->
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3 id="modal-title">New payee</h3>
+      <label>Name <input id="p-name" type="text" /></label>
+      <div class="row">
+        <label>Sort code <input id="p-sort" type="text" placeholder="12-34-56" /></label>
+        <label>Account number <input id="p-account" type="text" placeholder="12345678" /></label>
+      </div>
+      <label>Default reference (optional) <input id="p-reference" type="text" /></label>
+      <div class="form-actions">
+        <button id="modal-save" class="btn primary">Save</button>
+        <button id="modal-cancel" class="btn ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="santander.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
