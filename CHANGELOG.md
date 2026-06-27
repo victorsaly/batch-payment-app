@@ -7,6 +7,10 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ## Unreleased
 
 ### Added
+- **HSBC, Barclays, Lloyds and NatWest are now selectable** — each produces the
+  cross-bank formats we generate (Bacs Standard 18, ISO 20022 UK GBP, and SEPA EUR).
+  Verify with a test upload. More UK banks and fintechs (Revolut, Wise, Tide…) remain
+  on the picker as "coming soon".
 - **SEPA credit transfers** — pay **euros to IBANs** across the EU/EEA. Choose the
   **ISO 20022** bank, then the **SEPA EUR** format: the grid swaps to IBAN/BIC columns,
   IBANs are checksum-validated, and the file is `pain.001.001.03` (BIC optional /

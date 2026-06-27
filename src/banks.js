@@ -43,36 +43,36 @@ const BANKS = [
     name: 'Lloyds',
     color: '#024731',
     initial: 'L',
-    status: 'coming-soon',
-    formats: [],
-    note: 'Lloyds Commercial Banking Online — CSV templates (BACS & Faster Payment), Bacs Standard 18, and ISO 20022 XML.'
+    status: 'available',
+    formats: ['STANDARD18', 'ISO20022', 'SEPA'],
+    note: 'Lloyds Commercial Banking Online — generates Bacs Standard 18, ISO 20022 XML (UK GBP) and SEPA (EUR). CSV templates planned. Verify with a test upload.'
   },
   {
     id: 'barclays',
     name: 'Barclays',
     color: '#00aeef',
     initial: 'B',
-    status: 'coming-soon',
-    formats: [],
-    note: 'Barclays.Net / iPortal — Bacs Standard 18, ISO 20022 XML, and mapped CSV.'
+    status: 'available',
+    formats: ['STANDARD18', 'ISO20022', 'SEPA'],
+    note: 'Barclays.Net / iPortal — generates Bacs Standard 18, ISO 20022 XML (UK GBP) and SEPA (EUR). Verify with a test upload.'
   },
   {
     id: 'hsbc',
     name: 'HSBC',
     color: '#db0011',
     initial: 'H',
-    status: 'coming-soon',
-    formats: [],
-    note: 'HSBCnet — Bacs Standard 18 (BACS + Faster Payments) and ISO 20022 XML (all payments incl. SEPA).'
+    status: 'available',
+    formats: ['STANDARD18', 'ISO20022', 'SEPA'],
+    note: 'HSBCnet — generates Bacs Standard 18 (BACS + Faster Payments), ISO 20022 XML (UK GBP) and SEPA (EUR). Verify with a test upload.'
   },
   {
     id: 'natwest',
     name: 'NatWest',
     color: '#5a2d81',
     initial: 'N',
-    status: 'coming-soon',
-    formats: [],
-    note: 'NatWest Bankline — Bacs Standard 18, Bankline CSV, and ISO 20022 XML (pain.001.001.09).'
+    status: 'available',
+    formats: ['STANDARD18', 'ISO20022', 'SEPA'],
+    note: 'NatWest Bankline — generates Bacs Standard 18 and ISO 20022 XML (UK GBP, pain.001.001.09) and SEPA (EUR). Bankline CSV planned. Verify with a test upload.'
   },
 
   // --- more UK high-street banks (planned) ---

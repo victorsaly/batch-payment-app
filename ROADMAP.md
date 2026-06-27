@@ -15,15 +15,16 @@ entry in the bank registry ([`src/banks.js`](src/banks.js)).
 | ✅ **Santander** | Santander Connect | Bacs payment import (HEADER/PAYMENT/TRAILER) · Mixed payments (85-column CSV) |
 | ✅ **Bacs Standard 18** | Cross-bank | Fixed-width credit records (transaction code 99). Tape-label wrappers (VOL1/HDR/UHL1/UTL1/EOF) not emitted — add per your bank's guidance if required. |
 | ✅ **ISO 20022** | Cross-bank | XML credit transfers: **UK domestic GBP** (`pain.001.001.09`, sort/account) and **SEPA EUR** (`pain.001.001.03`, IBAN/BIC). International planned. Verify with a test upload. |
+| ✅ **HSBC · Barclays · Lloyds · NatWest** | Corporate file upload | Selectable in the picker — each generates **Bacs Standard 18**, **ISO 20022** (UK GBP) and **SEPA** (EUR) using the cross-bank engines above. Per-bank CSV planned. Verify with a test upload. |
 
 ## Which banks & formats next
 
 The full bank-by-bank matrix of accepted formats (high-street banks **and**
 fintechs like Revolut/Wise) and what PayBatch supports lives in **[FORMATS.md](FORMATS.md)**.
 
-The app's **bank picker** already lists these as *coming soon*:
+The app's **bank picker** lists these as *coming soon*:
 
-- **High-street:** Lloyds · Barclays · HSBC · NatWest · TSB · Co-operative · Nationwide · Metro Bank
+- **High-street:** TSB · Co-operative · Nationwide · Metro Bank
 - **Fintech / business:** Revolut · Wise · Tide · Starling · Monzo
 - **International:** Currencycloud
 
