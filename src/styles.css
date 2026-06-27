@@ -191,6 +191,19 @@ main { flex: 1; overflow: auto; padding: 22px; }
 .bank-tile.soon .bank-status { color: var(--warn); }
 .bank-status.beta { color: #fff; background: var(--warn); border-radius: 10px; padding: 0 7px; display: inline-block; font-weight: 700; }
 
+/* subtle sheen over the brand-colour badge (badge uses background-color inline) */
+.bank-badge { background-image: linear-gradient(165deg, rgba(255, 255, 255, .22), rgba(0, 0, 0, .16)); }
+
+/* bank search + groups */
+.bank-search {
+  width: 100%; max-width: 360px; margin: 0 0 16px; display: block;
+  padding: 9px 13px; border: 1px solid var(--line); border-radius: 9px; font-size: 14px; background: #fff;
+}
+.bank-search:focus { outline: 2px solid var(--red); border-color: var(--red); }
+.bank-group { margin-bottom: 16px; }
+.bank-group-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 8px; }
+.bank-noresult { color: var(--muted); font-size: 14px; }
+
 /* compact selected-bank chip on the Build screen (replaces the full strip) */
 .settings-title { display: flex; align-items: center; gap: 12px; }
 .bank-chip {

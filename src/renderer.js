@@ -188,28 +188,42 @@ function hideSplash() {
 // ----------------------------------------------------------------- bank picker
 const BankReg = window.Banks;
 
-// Renders the bank tiles into every .bank-strip (home + build screen) so they
-// stay in sync.
+function buildBankTile(b) {
+  const soon = b.status !== 'available';
+  const tile = document.createElement('button');
+  tile.type = 'button';
+  tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
+  tile.dataset.bank = b.id;
+  const statusText = b.beta ? 'Beta' : (soon ? 'Coming soon' : 'Available');
+  tile.innerHTML = `
+    <span class="bank-badge" style="background-color:${b.color}">${esc(b.initial)}</span>
+    <span class="bank-meta">
+      <span class="bank-name">${esc(b.name)}</span>
+      <span class="bank-status${b.beta ? ' beta' : ''}">${statusText}</span>
+    </span>`;
+  tile.addEventListener('click', () => onSelectBank(b.id));
+  return tile;
+}
+
+// Render the bank tiles into the Available / Coming-soon groups, filtered by the
+// search box.
 function renderBankStrip() {
-  $$('.bank-strip').forEach((strip) => {
-    strip.innerHTML = '';
-    BankReg.BANKS.forEach((b) => {
-      const soon = b.status !== 'available';
-      const tile = document.createElement('button');
-      tile.type = 'button';
-      tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
-      tile.dataset.bank = b.id;
-      const statusText = b.beta ? 'Beta' : (soon ? 'Coming soon' : 'Available');
-      tile.innerHTML = `
-        <span class="bank-badge" style="background:${b.color}">${esc(b.initial)}</span>
-        <span class="bank-meta">
-          <span class="bank-name">${esc(b.name)}</span>
-          <span class="bank-status${b.beta ? ' beta' : ''}">${statusText}</span>
-        </span>`;
-      tile.addEventListener('click', () => onSelectBank(b.id));
-      strip.appendChild(tile);
-    });
+  const avail = $('#home-bank-available');
+  const soon = $('#home-bank-soon');
+  if (!avail || !soon) return;
+  const term = ($('#bank-search') ? $('#bank-search').value : '').trim().toLowerCase();
+  avail.innerHTML = '';
+  soon.innerHTML = '';
+  let nAvail = 0, nSoon = 0;
+  BankReg.BANKS.forEach((b) => {
+    if (term && b.name.toLowerCase().indexOf(term) === -1) return;
+    if (b.status === 'available') { avail.appendChild(buildBankTile(b)); nAvail++; }
+    else { soon.appendChild(buildBankTile(b)); nSoon++; }
   });
+  const grpA = $('#grp-available'), grpS = $('#grp-soon'), none = $('#bank-noresult');
+  if (grpA) grpA.classList.toggle('hidden', nAvail === 0);
+  if (grpS) grpS.classList.toggle('hidden', nSoon === 0);
+  if (none) none.classList.toggle('hidden', nAvail + nSoon > 0);
 }
 
 function onSelectBank(id) {
@@ -445,6 +459,7 @@ function wireEvents() {
   $$('.tab').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
   $('#brand-home').addEventListener('click', () => goToView('home'));
   $('#bank-indicator').addEventListener('click', () => goToView('home'));
+  $('#bank-search').addEventListener('input', renderBankStrip);
 
   // Paste straight from Excel/Sheets — drop tabular clipboard data into the batch.
   document.addEventListener('paste', onPasteIntoBatch);

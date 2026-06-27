@@ -81,18 +81,18 @@ const BANKS = [
     name: 'TSB',
     color: '#1c3f94',
     initial: 'TSB',
-    status: 'coming-soon',
-    formats: [],
-    note: 'TSB — Bacs Standard 18 and CSV (varies).'
+    status: 'available',
+    formats: ['STANDARD18'],
+    note: 'TSB — generates Bacs Standard 18. CSV planned. Verify with a test upload.'
   },
   {
     id: 'coop',
     name: 'Co-operative',
     color: '#00a1de',
     initial: 'Co',
-    status: 'coming-soon',
-    formats: [],
-    note: 'The Co-operative Bank — Bacs Standard 18 and CSV.'
+    status: 'available',
+    formats: ['STANDARD18'],
+    note: 'The Co-operative Bank — generates Bacs Standard 18. CSV planned. Verify with a test upload.'
   },
   {
     id: 'nationwide',
@@ -108,9 +108,9 @@ const BANKS = [
     name: 'Metro Bank',
     color: '#002d72',
     initial: 'M',
-    status: 'coming-soon',
-    formats: [],
-    note: 'Metro Bank — Bacs Standard 18 and CSV.'
+    status: 'available',
+    formats: ['STANDARD18'],
+    note: 'Metro Bank — generates Bacs Standard 18. CSV planned. Verify with a test upload.'
   },
 
   // --- fintech / business accounts (planned) ---
