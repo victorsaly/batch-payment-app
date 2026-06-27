@@ -9,6 +9,18 @@ and this project follows [Semantic Versioning](https://semver.org/).
 ### Added
 - **Bank chip** on the Build screen showing the selected bank, with a quick
   "Change ▸" back to the home screen to switch bank.
+- **Paste from Excel / Sheets** — copy cells and press Cmd/Ctrl + V on the Build
+  screen to load them straight into the batch.
+- **Bacs Standard 18** — a second, cross-bank fixed-width credit format,
+  selectable from the bank picker.
+- **Error tracking** — problems are logged locally with a short reference code
+  (e.g. `ERR-AB12C`); view or clear the log under Help › Report a problem.
+- **FAQ** in Help; **smooth view transitions** and busy spinners on export/import.
+- App **version** shown in the footer (click for the changelog) and in Help.
+
+### Fixed
+- Smarter import header detection (a single pasted row whose reference contained
+  “ref” was wrongly treated as a header).
 
 ### Changed
 - Release pipeline now builds each platform, then publishes all installers from

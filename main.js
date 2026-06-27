@@ -58,6 +58,56 @@ function saveData(data) {
   return { saved: true, encrypted: false };
 }
 
+// ---- Local error log (no telemetry; stays on this machine) ----
+const ERROR_LOG = () => path.join(app.getPath('userData'), 'paybatch-errors.log');
+
+function genErrorCode() {
+  // Short, human-quotable reference, e.g. ERR-7K3F9.
+  let s = '';
+  for (let i = 0; i < 5; i++) s += 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'[Math.floor(Math.random() * 32)];
+  return 'ERR-' + s;
+}
+
+function logError(info) {
+  const entry = {
+    code: genErrorCode(),
+    time: new Date().toISOString(),
+    version: app.getVersion(),
+    platform: `${process.platform} ${process.arch}`,
+    context: (info && info.context) || 'app',
+    message: (info && info.message) || 'Unknown error',
+    stack: (info && info.stack) || ''
+  };
+  try { fs.appendFileSync(ERROR_LOG(), JSON.stringify(entry) + '\n', 'utf8'); } catch (_) {}
+  return { code: entry.code, time: entry.time };
+}
+
+function readErrors(limit) {
+  try {
+    const lines = fs.readFileSync(ERROR_LOG(), 'utf8').split('\n').filter(Boolean);
+    const parsed = [];
+    for (const l of lines) { try { parsed.push(JSON.parse(l)); } catch (_) {} }
+    return parsed.slice(-(limit || 50)).reverse();
+  } catch (_) { return []; }
+}
+
+ipcMain.handle('error:log', (_evt, info) => logError(info));
+ipcMain.handle('error:list', () => readErrors(50));
+ipcMain.handle('error:reveal', () => {
+  try {
+    if (!fs.existsSync(ERROR_LOG())) fs.writeFileSync(ERROR_LOG(), '', 'utf8');
+    shell.showItemInFolder(ERROR_LOG());
+  } catch (_) {}
+  return true;
+});
+ipcMain.handle('error:clear', () => {
+  try { fs.writeFileSync(ERROR_LOG(), '', 'utf8'); } catch (_) {}
+  return true;
+});
+
+// Log uncaught errors from the main process too.
+process.on('uncaughtException', (err) => logError({ context: 'main', message: String(err && err.message || err), stack: err && err.stack }));
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1180,

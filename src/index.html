@@ -126,7 +126,7 @@
           </div>
         </div>
 
-        <div class="ptype-row bacs-only">
+        <div class="ptype-row" data-fmt="BACS_IMPORT">
           <span class="hint">Payment type</span>
           <div class="seg" id="ptype-seg">
             <button type="button" class="seg-btn active" data-ptype="BACS">Single (BACS)</button>
@@ -135,19 +135,19 @@
         </div>
 
         <div class="settings-grid">
-          <label class="bacs-only">Debit sort code <span class="hint">your account</span>
+          <label data-fmt="BACS_IMPORT STANDARD18">Debit sort code <span class="hint">your account</span>
             <input id="s-debit-sort" type="text" inputmode="numeric" placeholder="09-01-22" />
           </label>
-          <label class="bacs-only">Debit account number
+          <label data-fmt="BACS_IMPORT STANDARD18">Debit account number
             <input id="s-debit-account" type="text" inputmode="numeric" placeholder="11223344" />
           </label>
-          <label>Payment date <span class="hint">ddmmyyyy</span>
+          <label data-fmt="BACS_IMPORT MIXED">Payment date <span class="hint">ddmmyyyy</span>
             <input id="s-payment-date" type="date" />
           </label>
-          <label class="bacs-only">File sequence no. <span class="hint">1–9999, auto</span>
+          <label data-fmt="BACS_IMPORT">File sequence no. <span class="hint">1–9999, auto</span>
             <input id="s-seq" type="number" min="1" max="9999" />
           </label>
-          <label class="bacs-only">File location ID <span class="hint">optional</span>
+          <label data-fmt="BACS_IMPORT STANDARD18">Your name <span class="hint">originator / location, optional</span>
             <input id="s-location" type="text" placeholder="PAYMENT FILES" />
           </label>
         </div>
@@ -305,6 +305,9 @@
           <li>Use the <strong>Add a payment</strong> form on the left, or pick a
             <strong>saved payee</strong> to auto-fill it.</li>
           <li>Click <strong>+ Add row</strong> to type straight into the table.</li>
+          <li><strong>Paste straight from Excel</strong> — select your cells, copy, then
+            press <strong>Cmd/Ctrl + V</strong> on the Build batch screen. Rows load
+            automatically.</li>
           <li>Click <strong>Import…</strong> to load a CSV (e.g. an Excel export).
             Click <strong>Template</strong> first to get a correctly-formatted file to
             fill in.</li>
@@ -348,6 +351,69 @@
         You are responsible for checking that every beneficiary, sort code, account number,
         amount and reference is correct before submitting a payment file to your bank.
         Always reconcile the on-screen total against your records.</p>
+
+        <h3>FAQ</h3>
+        <div class="faq">
+          <details>
+            <summary>My bank rejected the file — what now?</summary>
+            <p>First, always do one small <strong>test upload</strong> before a full run.
+            If a column name, order or value is off, it's a quick fix — the whole format
+            lives in one place and can be adjusted. Double-check you picked the right
+            <strong>output format</strong> (Bacs import vs Mixed) for your channel.</p>
+          </details>
+          <details>
+            <summary>Why is the Export button greyed out?</summary>
+            <p>There's at least one invalid row. Look for cells outlined in
+            <span class="docs-err">red</span> and fix them — Export enables once every row
+            is valid.</p>
+          </details>
+          <details>
+            <summary>Can I paste from Excel or Google Sheets?</summary>
+            <p>Yes. Select the cells, copy, then press <strong>Cmd/Ctrl + V</strong> on the
+            Build batch screen. Columns are detected automatically. A header row is
+            optional.</p>
+          </details>
+          <details>
+            <summary>What's the difference between BACS and MULTIBACS?</summary>
+            <p><strong>Single (BACS)</strong> is for one or more independent payments.
+            <strong>Multiple (MULTIBACS)</strong> is for many payments that share one debit
+            account and payment date — and every payment then needs a reference.</p>
+          </details>
+          <details>
+            <summary>Is my data sent anywhere?</summary>
+            <p>No. Everything stays on this computer and is <strong>encrypted</strong> with
+            your operating-system keychain. PayBatch makes no network requests except an
+            optional check for app updates. The storage location is shown in the bottom
+            bar.</p>
+          </details>
+          <details>
+            <summary>Which banks are supported?</summary>
+            <p><strong>Santander</strong> is available now. <strong>Lloyds, Barclays, HSBC
+            and NatWest</strong> are on the roadmap and appear as “coming soon” on the home
+            screen.</p>
+          </details>
+          <details>
+            <summary>How do I get a new version?</summary>
+            <p>When an update is available you'll see a banner at the top with a
+            <strong>Download</strong> link. You can also click
+            <strong>Check for updates</strong> below.</p>
+          </details>
+          <details>
+            <summary>Something went wrong — how do I report it?</summary>
+            <p>If an error appears it includes a short <strong>reference code</strong>
+            (e.g. <code>ERR-AB12C</code>). Note that code; you can view recent issues and
+            copy diagnostics from <strong>Report a problem</strong> below.</p>
+          </details>
+        </div>
+
+        <h3>Report a problem</h3>
+        <p>If something goes wrong, PayBatch records a local error with a short
+        <strong>reference code</strong> you can quote when asking for help. Nothing is sent
+        anywhere — the log stays on this computer.</p>
+        <p>
+          <button id="open-errorlog" class="link">View error log</button> ·
+          <button id="reveal-errorlog" class="link">Open log file</button>
+        </p>
 
         <h3>Version</h3>
         <p>You're running PayBatch <strong id="app-version">—</strong>.
@@ -394,8 +460,42 @@
     </div>
   </div>
 
+  <!-- Error notice modal (shown when something goes wrong) -->
+  <div id="error-modal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3>⚠️ Something went wrong</h3>
+      <p id="error-modal-msg" class="error-msg"></p>
+      <div class="error-code-row">
+        <span>Reference</span>
+        <code id="error-modal-code">ERR-—</code>
+        <button id="error-copy" class="btn ghost tiny">Copy</button>
+      </div>
+      <p class="hint">Quote this code if you report the issue. Nothing was sent anywhere.</p>
+      <div class="form-actions">
+        <button id="error-viewlog" class="btn ghost">View error log</button>
+        <button id="error-close" class="btn primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error log viewer -->
+  <div id="errorlog-modal" class="modal-backdrop hidden">
+    <div class="modal modal-wide">
+      <div class="card-head">
+        <h3>Error log</h3>
+        <button id="errorlog-close" class="btn ghost tiny">Close</button>
+      </div>
+      <div id="errorlog-body" class="changelog-body">No errors recorded.</div>
+      <div class="form-actions">
+        <button id="errorlog-reveal" class="btn ghost">Open log file</button>
+        <button id="errorlog-clear" class="btn ghost danger">Clear log</button>
+      </div>
+    </div>
+  </div>
+
   <script src="banks.js"></script>
   <script src="santander.js"></script>
+  <script src="standard18.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

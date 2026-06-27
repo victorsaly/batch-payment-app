@@ -21,6 +21,15 @@ const BANKS = [
     note: 'Santander Connect — Bacs payment import (HEADER/PAYMENT/TRAILER) and the wide “mixed payments” layout.'
   },
   {
+    id: 'bacs18',
+    name: 'Standard 18',
+    color: '#3b5566',
+    initial: '18',
+    status: 'available',
+    formats: ['STANDARD18'],
+    note: 'Bacs Standard 18 — the cross-bank fixed-width credit file accepted by many UK banks and bureaus.'
+  },
+  {
     id: 'lloyds',
     name: 'Lloyds',
     color: '#024731',

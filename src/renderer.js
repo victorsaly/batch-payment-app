@@ -25,6 +25,7 @@ const $$ = (sel) => Array.from(document.querySelectorAll(sel));
 
 // ----------------------------------------------------------------- boot
 async function init() {
+  installErrorHandlers();
   data = await window.api.loadData();
   data.payees = data.payees || [];
   data.batches = data.batches || [];
@@ -43,6 +44,7 @@ async function init() {
   renderBankStrip();
   applyBankUI();
   updateBankIndicator();
+  renderFormatSeg();
   applyFormatUI();
   initVersionAndUpdates();
 
@@ -90,21 +92,64 @@ function saveSettingsToData() {
   persist();
 }
 
-// Show/hide the Bacs-only settings and relabel controls for the chosen format.
+const STANDARD18 = 'STANDARD18';
+const FORMAT_LABELS = {
+  BACS_IMPORT: 'Bacs import (.txt)',
+  MIXED: 'Mixed payments (.txt)',
+  STANDARD18: 'Standard 18 (.txt)'
+};
+const EXPORT_LABELS = {
+  BACS_IMPORT: 'Export Bacs file (.txt)',
+  MIXED: 'Export Mixed file (.txt)',
+  STANDARD18: 'Export Standard 18 (.txt)'
+};
+
+// Standard 18 has no MULTIBACS/reference rules of its own — validate its rows
+// like the mixed format (name/sort/account/amount required, reference optional).
+function validationFormat() {
+  return settings.outputFormat === STANDARD18 ? S.OUTPUT_FORMATS.MIXED : settings.outputFormat;
+}
+
+// Rebuild the format toggle from the selected bank's available formats.
+function renderFormatSeg() {
+  const seg = $('#format-seg');
+  const bank = BankReg.get(settings.selectedBank) || BankReg.get('santander');
+  const formats = (bank.formats && bank.formats.length) ? bank.formats : ['BACS_IMPORT'];
+  if (!formats.includes(settings.outputFormat)) settings.outputFormat = formats[0];
+  seg.innerHTML = '';
+  formats.forEach((f) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'seg-btn' + (f === settings.outputFormat ? ' active' : '');
+    b.dataset.format = f;
+    b.textContent = FORMAT_LABELS[f] || f;
+    b.addEventListener('click', () => {
+      settings.outputFormat = f;
+      saveSettingsToData();
+      applyFormatUI();
+      renderBatch();
+    });
+    seg.appendChild(b);
+  });
+}
+
+// Show only the settings each format needs (via data-fmt), relabel Export.
 function applyFormatUI() {
-  const isMixed = settings.outputFormat === S.OUTPUT_FORMATS.MIXED;
-  $$('.bacs-only').forEach((el) => el.classList.toggle('hidden', isMixed));
-  $$('#format-seg .seg-btn').forEach((b) =>
-    b.classList.toggle('active', b.dataset.format === settings.outputFormat));
-  $('#export-btn').textContent = isMixed ? 'Export Mixed file (.txt)' : 'Export Bacs file (.txt)';
+  const fmt = settings.outputFormat;
+  $$('[data-fmt]').forEach((el) => {
+    const fmts = el.getAttribute('data-fmt').split(/\s+/);
+    el.classList.toggle('hidden', !fmts.includes(fmt));
+  });
+  $$('#format-seg .seg-btn').forEach((b) => b.classList.toggle('active', b.dataset.format === fmt));
+  $('#export-btn').textContent = EXPORT_LABELS[fmt] || 'Export file (.txt)';
   applyRtiVisibility();
   updateMultiNote();
 }
 
-// RTI only applies to the Bacs format — hide that column for Mixed.
+// RTI only applies to the Santander Bacs import format.
 function applyRtiVisibility() {
-  const hide = settings.outputFormat === S.OUTPUT_FORMATS.MIXED;
-  $$('.rti-col').forEach((el) => el.classList.toggle('hidden', hide));
+  const show = settings.outputFormat === S.OUTPUT_FORMATS.BACS_IMPORT;
+  $$('.rti-col').forEach((el) => el.classList.toggle('hidden', !show));
 }
 
 // ----------------------------------------------------------------- navigation
@@ -136,11 +181,12 @@ function renderBankStrip() {
       tile.type = 'button';
       tile.className = 'bank-tile' + (b.id === settings.selectedBank ? ' active' : '') + (soon ? ' soon' : '');
       tile.dataset.bank = b.id;
+      const statusText = b.beta ? 'Beta' : (soon ? 'Coming soon' : 'Available');
       tile.innerHTML = `
         <span class="bank-badge" style="background:${b.color}">${esc(b.initial)}</span>
         <span class="bank-meta">
           <span class="bank-name">${esc(b.name)}</span>
-          <span class="bank-status">${soon ? 'Coming soon' : 'Available'}</span>
+          <span class="bank-status${b.beta ? ' beta' : ''}">${statusText}</span>
         </span>`;
       tile.addEventListener('click', () => onSelectBank(b.id));
       strip.appendChild(tile);
@@ -151,9 +197,12 @@ function renderBankStrip() {
 function onSelectBank(id) {
   settings.selectedBank = id;
   $$('.bank-strip .bank-tile').forEach((t) => t.classList.toggle('active', t.dataset.bank === id));
-  saveSettingsToData();
   applyBankUI();
   updateBankIndicator();
+  renderFormatSeg();
+  applyFormatUI();
+  saveSettingsToData();   // after format may have been reset to the bank's default
+  renderBatch();
 }
 
 // Compact "selected bank" chip shown on the Build screen (Change ▸ goes Home).
@@ -227,6 +276,8 @@ async function initVersionAndUpdates() {
     const v = await window.api.appVersion();
     const el = $('#app-version');
     if (el) el.textContent = 'v' + v;
+    const fv = $('#footer-version');
+    if (fv) fv.textContent = 'PayBatch v' + v;
   } catch (_) {}
   checkForUpdates(false);
 }
@@ -298,7 +349,9 @@ function readSettingsFromInputs() {
 
 function updateMultiNote() {
   const note = $('#multi-note');
-  if (settings.outputFormat === S.OUTPUT_FORMATS.MIXED) {
+  if (settings.outputFormat === STANDARD18) {
+    note.textContent = 'Standard 18: fixed-width Bacs credit records using your account as the originator. Some banks also require tape-label records — check your bank’s upload guidance.';
+  } else if (settings.outputFormat === S.OUTPUT_FORMATS.MIXED) {
     note.textContent = 'Mixed payments: one row per payment, no header/trailer. Only a payment date and the beneficiary rows are needed. Do a test upload to confirm acceptance.';
   } else if (settings.paymentType === S.PAYMENT_TYPES.MULTIPLE) {
     note.textContent = 'Multiple (MULTIBACS): all payments use this one debit account and payment date, and every payment needs a reference.';
@@ -308,6 +361,60 @@ function updateMultiNote() {
 }
 
 // ----------------------------------------------------------------- events
+// ----------------------------------------------------------------- error tracking
+function installErrorHandlers() {
+  window.addEventListener('error', (e) =>
+    reportError('renderer', e.error || { message: e.message, stack: `${e.filename}:${e.lineno}` }));
+  window.addEventListener('unhandledrejection', (e) => {
+    const r = e.reason;
+    reportError('promise', r instanceof Error ? r : { message: String(r), stack: '' });
+  });
+}
+
+let lastErrorShownAt = 0;
+async function reportError(context, err) {
+  const message = err && err.message ? err.message : String(err);
+  const stack = (err && err.stack) || '';
+  let code = 'ERR-LOCAL';
+  try { const r = await window.api.logError({ context, message, stack }); if (r && r.code) code = r.code; } catch (_) {}
+  const now = Date.now();
+  if (now - lastErrorShownAt < 500) return;   // don't stack modals on error storms
+  lastErrorShownAt = now;
+  showErrorModal(code, message);
+}
+
+function showErrorModal(code, message) {
+  $('#error-modal-code').textContent = code;
+  $('#error-modal-msg').textContent = message || 'An unexpected error occurred.';
+  $('#error-modal').classList.remove('hidden');
+}
+
+async function openErrorLog() {
+  const body = $('#errorlog-body');
+  body.innerHTML = 'Loading…';
+  $('#errorlog-modal').classList.remove('hidden');
+  let list = [];
+  try { list = await window.api.listErrors(); } catch (_) {}
+  if (!list.length) { body.innerHTML = '<p class="recent-empty">No errors recorded. 🎉</p>'; return; }
+  body.innerHTML = list.map((e) => `
+    <div class="errlog-item">
+      <div class="errlog-top"><code>${esc(e.code)}</code><span>${esc(new Date(e.time).toLocaleString())}</span></div>
+      <div class="errlog-msg">${esc(e.message)}</div>
+      <div class="errlog-meta">${esc(e.context)} · v${esc(e.version)} · ${esc(e.platform)}</div>
+    </div>`).join('');
+}
+
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (_) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = t; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); ta.remove(); return true;
+    } catch (_) { return false; }
+  }
+}
+
 function wireEvents() {
   $$('.tab').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
   $('#brand-home').addEventListener('click', () => goToView('home'));
@@ -333,14 +440,7 @@ function wireEvents() {
     })
   );
 
-  $$('#format-seg .seg-btn').forEach((b) =>
-    b.addEventListener('click', () => {
-      settings.outputFormat = b.dataset.format;
-      applyFormatUI();
-      saveSettingsToData();
-      renderBatch();
-    })
-  );
+  // (#format-seg buttons are rendered + wired in renderFormatSeg)
 
   $$('#ptype-seg .seg-btn').forEach((b) =>
     b.addEventListener('click', () => {
@@ -385,6 +485,19 @@ function wireEvents() {
 
   // Changelog + version
   $('#open-changelog').addEventListener('click', openChangelog);
+  $('#footer-version').addEventListener('click', openChangelog);
+
+  // Error tracking UI
+  $('#error-close').addEventListener('click', () => $('#error-modal').classList.add('hidden'));
+  $('#error-copy').addEventListener('click', async () => {
+    await copyText($('#error-modal-code').textContent); toast('Reference code copied');
+  });
+  $('#error-viewlog').addEventListener('click', () => { $('#error-modal').classList.add('hidden'); openErrorLog(); });
+  $('#open-errorlog').addEventListener('click', openErrorLog);
+  $('#reveal-errorlog').addEventListener('click', () => window.api.revealErrorLog());
+  $('#errorlog-close').addEventListener('click', () => $('#errorlog-modal').classList.add('hidden'));
+  $('#errorlog-reveal').addEventListener('click', () => window.api.revealErrorLog());
+  $('#errorlog-clear').addEventListener('click', async () => { await window.api.clearErrors(); openErrorLog(); toast('Error log cleared'); });
   $('#changelog-close').addEventListener('click', () => $('#changelog-modal').classList.add('hidden'));
   $('#check-updates').addEventListener('click', () => { checkForUpdates(true); toast('Checking for updates…'); });
 }
@@ -401,7 +514,7 @@ function onAddPayment(e) {
     rti: $('#f-rti').value
   };
 
-  const { errors } = S.validatePayment(p, settings.paymentType, settings.outputFormat);
+  const { errors } = S.validatePayment(p, settings.paymentType, validationFormat());
   if (errors.length) { toast('Fix before adding: ' + errors[0], true); return; }
 
   batch.push(p);
@@ -484,7 +597,7 @@ function renderBatch() {
 function updateRow(i) {
   const tr = $(`#batch-table tbody tr[data-index="${i}"]`);
   if (!tr) return;
-  const { fieldErrors, fieldWarnings, errors, warnings } = S.validatePayment(batch[i], settings.paymentType, settings.outputFormat);
+  const { fieldErrors, fieldWarnings, errors, warnings } = S.validatePayment(batch[i], settings.paymentType, validationFormat());
 
   CELLS.forEach((c) => {
     const input = tr.querySelector(`input[data-field="${c.field}"]`);
@@ -519,7 +632,7 @@ function onCellInput(e) {
 // Totals + summary badge + enable/disable export.
 function updateFooter() {
   const hasRows = batch.length > 0;
-  const results = S.validateBatch(batch, settings.paymentType, settings.outputFormat);
+  const results = S.validateBatch(batch, settings.paymentType, validationFormat());
   const errorCount = results.filter((r) => r.errors.length).length;
   const warnCount = results.filter((r) => !r.errors.length && r.warnings.length).length;
 
@@ -543,18 +656,28 @@ function onAddRow() {
   if (last) last.focus();
 }
 
+// Show a spinner on a button while an async action runs, then restore it.
+async function withBusy(btn, fn) {
+  if (!btn) return fn();
+  const wasDisabled = btn.disabled;
+  btn.classList.add('busy');
+  btn.disabled = true;
+  try { return await fn(); }
+  finally { btn.classList.remove('busy'); btn.disabled = wasDisabled; }
+}
+
 async function onDownloadTemplate() {
-  const res = await window.api.exportFile({
+  const res = await withBusy($('#template-btn'), () => window.api.exportFile({
     suggestedName: 'batch-payment-template.csv',
     contents: S.buildTemplate(),
     kind: 'template'
-  });
+  }));
   if (res && res.saved) toast('Template saved & opened — fill it in, then Import');
 }
 
 // ----------------------------------------------------------------- import / export
 async function onImport() {
-  const res = await window.api.importFile();
+  const res = await withBusy($('#import-btn'), () => window.api.importFile());
   if (!res || !res.imported) return;
   try {
     const rows = S.importPayments(res.contents);
@@ -568,28 +691,40 @@ async function onImport() {
 async function onExport() {
   readSettingsFromInputs();
   const format = settings.outputFormat;
-  const isMixed = format === S.OUTPUT_FORMATS.MIXED;
-
-  const sv = S.validateSettings(settings, format);
-  if (!sv.valid) { toast('Settings: ' + sv.errors[0], true); return; }
+  const stamp = S.toDDMMYYYY(S.todayISO());
 
   if (!batch.length) { toast('Add at least one payment first', true); return; }
-  const problems = S.validateBatch(batch, settings.paymentType, format).filter((r) => r.errors.length);
+  const problems = S.validateBatch(batch, settings.paymentType, validationFormat()).filter((r) => r.errors.length);
   if (problems.length) { toast('Fix the highlighted errors first', true); return; }
 
-  const fileSettings = { ...settings, creationDate: S.todayISO() };
-  const contents = S.buildOutput(format, fileSettings, batch);
-  const stamp = S.toDDMMYYYY(S.todayISO());
-  const seq = Number(settings.sequenceNumber);
-  const suggestedName = isMixed
-    ? `santander-mixed-${stamp}.txt`
-    : `santander-bacs-${stamp}-seq${seq}.txt`;
+  let contents, suggestedName;
 
-  const res = await window.api.exportFile({ suggestedName, contents });
+  if (format === STANDARD18) {
+    const s18 = {
+      originatorSort: settings.debitSortCode,
+      originatorAccount: settings.debitAccountNumber,
+      originatorName: settings.fileLocationId || ''
+    };
+    const sv = window.Standard18.validateStandard18Settings(s18);
+    if (!sv.valid) { toast('Settings: ' + sv.errors[0], true); return; }
+    contents = window.Standard18.buildStandard18File(s18, batch);
+    suggestedName = `bacs-standard18-${stamp}.txt`;
+  } else {
+    const sv = S.validateSettings(settings, format);
+    if (!sv.valid) { toast('Settings: ' + sv.errors[0], true); return; }
+    const fileSettings = { ...settings, creationDate: S.todayISO() };
+    contents = S.buildOutput(format, fileSettings, batch);
+    const seq = Number(settings.sequenceNumber);
+    suggestedName = format === S.OUTPUT_FORMATS.MIXED
+      ? `santander-mixed-${stamp}.txt`
+      : `santander-bacs-${stamp}-seq${seq}.txt`;
+  }
+
+  const res = await withBusy($('#export-btn'), () => window.api.exportFile({ suggestedName, contents }));
   if (res && res.saved) {
-    if (!isMixed) {
-      // Bacs files carry a unique sequence number — advance it for next time.
-      settings.sequenceNumber = Math.min(seq + 1, 9999);
+    if (format === S.OUTPUT_FORMATS.BACS_IMPORT) {
+      // Bacs import files carry a unique sequence number — advance it.
+      settings.sequenceNumber = Math.min(Number(settings.sequenceNumber) + 1, 9999);
       writeSettingsToInputs();
       saveSettingsToData();
     }

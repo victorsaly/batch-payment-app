@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PayBatch — bulk bank payments, without the spreadsheet</title>
+  <meta name="description" content="PayBatch is a free, local, offline desktop app that builds and exports UK bank bulk-payment files (Santander Connect, Bacs Standard 18). Encrypted — nothing leaves your machine." />
+  <meta property="og:title" content="PayBatch" />
+  <meta property="og:description" content="Build and export UK bank bulk-payment files. Local, offline and encrypted." />
+  <meta property="og:image" content="icon.png" />
+  <link rel="icon" href="icon.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="nav">
+    <a class="brand" href="#top">
+      <img src="logo.svg" alt="" width="34" height="34" />
+      <span>PayBatch</span>
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#banks">Banks</a>
+      <a class="ghost" href="https://github.com/victorsaly/batch-payment-app" target="_blank" rel="noopener">GitHub</a>
+      <a class="cta" href="#download">Download</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="top">
+    <div class="hero-text">
+      <span class="pill">Free · Local · Open source</span>
+      <h1>Bulk bank payments,<br />without the spreadsheet.</h1>
+      <p>PayBatch turns your payment list into the exact import file your bank expects —
+        validated as you type. It runs entirely on your computer and your data is encrypted,
+        so nothing ever leaves your machine.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#download">Download for free</a>
+        <a class="btn ghost" href="https://github.com/victorsaly/batch-payment-app" target="_blank" rel="noopener">View on GitHub</a>
+      </div>
+      <p class="tiny">macOS · Windows · Linux — no account, no sign-up.</p>
+    </div>
+
+    <!-- CSS app preview (stand-in until a real screenshot is added to screenshots/) -->
+    <div class="preview" aria-hidden="true">
+      <div class="win">
+        <div class="win-bar"><span></span><span></span><span></span><em>PayBatch</em></div>
+        <div class="win-body">
+          <div class="win-top">
+            <div class="win-logo"></div>
+            <div class="win-tabs"><b>Build batch</b><i>Saved payees</i><i>History</i><i>Help</i></div>
+          </div>
+          <div class="win-banks">
+            <span class="chip on">S · Santander</span>
+            <span class="chip">18 · Standard 18</span>
+            <span class="chip soon">L · Lloyds</span>
+          </div>
+          <div class="win-table">
+            <div class="r head"><span>Name</span><span>Sort</span><span>Account</span><span>Amount</span><span>Status</span></div>
+            <div class="r"><span>ACME LTD</span><span>12-34-56</span><span>12345678</span><span>£150.50</span><span class="ok">OK</span></div>
+            <div class="r"><span>BLUE OAK LTD</span><span>09-01-22</span><span>11223344</span><span>£75.00</span><span class="ok">OK</span></div>
+            <div class="r bad"><span>RIVER &amp; CO</span><span>0901</span><span>11223344</span><span>£12.00</span><span class="err">error</span></div>
+          </div>
+          <div class="win-foot"><span>3 payments · £237.50</span><span class="export">Export file ▸</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div><strong>🔒 Encrypted</strong> on your machine</div>
+    <div><strong>📴 Fully offline</strong> — no data sent anywhere</div>
+    <div><strong>⚡ Validated</strong> before your bank sees it</div>
+    <div><strong>£0</strong> — free &amp; open source</div>
+  </section>
+
+  <section class="features" id="features">
+    <h2>Everything you need to run a payment batch</h2>
+    <div class="grid">
+      <div class="card"><div class="ico">🏦</div><h3>Multiple bank formats</h3><p>Santander Connect (Bacs import &amp; mixed payments) and cross-bank Bacs Standard 18 — reproduced to the byte.</p></div>
+      <div class="card"><div class="ico">✅</div><h3>Inline validation</h3><p>Every cell is checked live. Bad sort codes, accounts and amounts are flagged before export, so the bank won't reject your file.</p></div>
+      <div class="card"><div class="ico">📋</div><h3>Paste from Excel</h3><p>Copy your rows in Excel or Google Sheets and paste straight in — columns are detected automatically.</p></div>
+      <div class="card"><div class="ico">🔐</div><h3>Encrypted &amp; offline</h3><p>Payees, batches and settings are encrypted with your OS keychain. PayBatch makes no network calls except an update check.</p></div>
+      <div class="card"><div class="ico">👥</div><h3>Saved payees &amp; history</h3><p>Reuse beneficiaries and reload past runs in a click. No more hunting through old spreadsheets.</p></div>
+      <div class="card"><div class="ico">⬆️</div><h3>Auto update &amp; changelog</h3><p>A gentle banner tells you when a new version ships, with a full changelog inside the app.</p></div>
+    </div>
+  </section>
+
+  <section class="how" id="how">
+    <h2>Three steps. That's it.</h2>
+    <div class="steps">
+      <div class="step"><span>1</span><h3>Pick your bank &amp; format</h3><p>Choose the bank and the file type your channel expects.</p></div>
+      <div class="step"><span>2</span><h3>Add your payments</h3><p>Type, paste from Excel, or import a CSV. Fix any flagged rows inline.</p></div>
+      <div class="step"><span>3</span><h3>Export &amp; upload</h3><p>Export the file — it opens automatically — then upload it to your bank.</p></div>
+    </div>
+  </section>
+
+  <section class="banks" id="banks">
+    <h2>Supported banks</h2>
+    <p class="sub">More UK banks are on the way. Want one prioritised? <a href="https://github.com/victorsaly/batch-payment-app/issues" target="_blank" rel="noopener">Open an issue.</a></p>
+    <div class="bankrow">
+      <div class="bk on"><span style="background:#ec0000">S</span>Santander<em>Available</em></div>
+      <div class="bk on"><span style="background:#3b5566">18</span>Standard 18<em>Available</em></div>
+      <div class="bk"><span style="background:#024731">L</span>Lloyds<em>Coming soon</em></div>
+      <div class="bk"><span style="background:#00aeef">B</span>Barclays<em>Coming soon</em></div>
+      <div class="bk"><span style="background:#db0011">H</span>HSBC<em>Coming soon</em></div>
+      <div class="bk"><span style="background:#5a2d81">N</span>NatWest<em>Coming soon</em></div>
+    </div>
+  </section>
+
+  <section class="download" id="download">
+    <h2>Download PayBatch</h2>
+    <p class="sub">Free for macOS, Windows and Linux. Pick your platform:</p>
+    <div class="dl-grid">
+      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+        <strong>macOS</strong><span>.dmg (Apple Silicon &amp; Intel)</span>
+      </a>
+      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+        <strong>Windows</strong><span>.exe installer</span>
+      </a>
+      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+        <strong>Linux</strong><span>.AppImage / .deb</span>
+      </a>
+    </div>
+    <p class="note">First launch: macOS → right-click the app → <em>Open</em>. Windows → <em>More info → Run anyway</em>
+       (the app isn't code-signed yet).</p>
+  </section>
+
+  <footer class="foot">
+    <div>
+      <img src="logo.svg" alt="" width="28" height="28" />
+      <span>PayBatch</span>
+    </div>
+    <nav>
+      <a href="https://github.com/victorsaly/batch-payment-app" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/victorsaly/batch-payment-app/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Changelog</a>
+      <a href="https://github.com/victorsaly/batch-payment-app/blob/main/ROADMAP.md" target="_blank" rel="noopener">Roadmap</a>
+      <a href="https://github.com/victorsaly/batch-payment-app/blob/main/LICENSE" target="_blank" rel="noopener">MIT License</a>
+    </nav>
+    <p class="disclaimer">Independent tool — not affiliated with, endorsed by or supported by any bank.
+      Always verify payment details and do a test upload before a full run.</p>
+  </footer>
+</body>
+</html>

@@ -3,7 +3,14 @@
   <h1>PayBatch</h1>
   <p><strong>A local, offline desktop app that builds and exports your bank's
   bulk-payment import files — replacing the clunky Excel process.</strong></p>
-  <p><em>Currently supports Santander Connect. More banks planned.</em></p>
+  <p><em>Supports Santander Connect and Bacs Standard 18. More banks planned.</em></p>
+
+  <p>
+    <a href="https://victorsaly.github.io/batch-payment-app/"><strong>🌐 Website</strong></a> ·
+    <a href="https://github.com/victorsaly/batch-payment-app/releases/latest"><strong>⬇️ Download</strong></a> ·
+    <a href="CHANGELOG.md"><strong>Changelog</strong></a> ·
+    <a href="ROADMAP.md"><strong>Roadmap</strong></a>
+  </p>
 
   <p>
     <a href="https://github.com/victorsaly/batch-payment-app/actions/workflows/ci.yml">

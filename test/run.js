@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 
 const S = require('../src/santander.js');
+const S18 = require('../src/standard18.js');
 const F = S.OUTPUT_FORMATS;
 
 let passed = 0;
@@ -79,6 +80,34 @@ test('Mixed import auto-detects the wide layout', () => {
   assert.strictEqual(imported[0].sortCode, '100001');
   assert.strictEqual(imported[0].accountNumber, '90000001');
   assert.strictEqual(imported[0].amount, '1000.00');
+});
+
+// ---------------------------------------------------------------- Standard 18 (Beta)
+test('Standard 18 record is 100 chars with fields in the right positions', () => {
+  const settings = { originatorSort: '090122', originatorAccount: '11223344', originatorName: 'ACME LTD' };
+  const p = { sortCode: '12-34-56', accountNumber: '12345678', amount: '150.50', reference: 'INV-1001', name: 'Beneficiary Ltd' };
+  const rec = S18.buildStandard18Record(settings, p);
+  assert.strictEqual(rec.length, 100);
+  assert.strictEqual(rec.slice(0, 6), '123456');        // dest sort
+  assert.strictEqual(rec.slice(6, 14), '12345678');     // dest account
+  assert.strictEqual(rec.slice(14, 15), '0');           // account type
+  assert.strictEqual(rec.slice(15, 17), '99');          // transaction code (credit)
+  assert.strictEqual(rec.slice(17, 23), '090122');      // origin sort
+  assert.strictEqual(rec.slice(23, 31), '11223344');    // origin account
+  assert.strictEqual(rec.slice(35, 46), '00000015050'); // amount in pence
+  assert.strictEqual(rec.slice(64, 82), 'INV-1001'.padEnd(18, ' '));
+  assert.strictEqual(rec.slice(82, 100), 'BENEFICIARY LTD'.padEnd(18, ' '));
+});
+
+test('Standard 18 file: one CRLF-terminated 100-char line per payment', () => {
+  const settings = { originatorSort: '090122', originatorAccount: '11223344', originatorName: '' };
+  const file = S18.buildStandard18File(settings, [
+    { sortCode: '123456', accountNumber: '12345678', amount: '10.00', reference: 'A', name: 'X' },
+    { sortCode: '654321', accountNumber: '87654321', amount: '5.55', reference: 'B', name: 'Y' }
+  ]);
+  const lines = file.split('\r\n').filter(Boolean);
+  assert.strictEqual(lines.length, 2);
+  assert.ok(lines.every((l) => l.length === 100));
 });
 
 // ---------------------------------------------------------------- validation

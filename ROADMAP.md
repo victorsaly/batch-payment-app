@@ -13,6 +13,7 @@ entry in the bank registry ([`src/banks.js`](src/banks.js)).
 | Bank | Channel | Format(s) |
 |------|---------|-----------|
 | ✅ **Santander** | Santander Connect | Bacs payment import (HEADER/PAYMENT/TRAILER) · Mixed payments (85-column CSV) |
+| ✅ **Bacs Standard 18** | Cross-bank | Fixed-width credit records (transaction code 99). Tape-label wrappers (VOL1/HDR/UHL1/UTL1/EOF) not emitted — add per your bank's guidance if required. |
 
 ## Planned banks
 

@@ -12,5 +12,9 @@ contextBridge.exposeInMainWorld('api', {
   openExternal: (url) => ipcRenderer.invoke('shell:open-external', url),
   appVersion: () => ipcRenderer.invoke('app:version'),
   changelog: () => ipcRenderer.invoke('app:changelog'),
-  checkUpdate: () => ipcRenderer.invoke('app:check-update')
+  checkUpdate: () => ipcRenderer.invoke('app:check-update'),
+  logError: (info) => ipcRenderer.invoke('error:log', info),
+  listErrors: () => ipcRenderer.invoke('error:list'),
+  revealErrorLog: () => ipcRenderer.invoke('error:reveal'),
+  clearErrors: () => ipcRenderer.invoke('error:clear')
 });
