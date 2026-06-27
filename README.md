@@ -9,7 +9,8 @@
     <a href="https://victorsaly.github.io/batch-payment-app/"><strong>🌐 Website</strong></a> ·
     <a href="https://github.com/victorsaly/batch-payment-app/releases/latest"><strong>⬇️ Download</strong></a> ·
     <a href="CHANGELOG.md"><strong>Changelog</strong></a> ·
-    <a href="ROADMAP.md"><strong>Roadmap</strong></a>
+    <a href="ROADMAP.md"><strong>Roadmap</strong></a> ·
+    <a href="FORMATS.md"><strong>Bank formats</strong></a>
   </p>
 
   <p>

@@ -36,7 +36,7 @@ const BANKS = [
     initial: 'L',
     status: 'coming-soon',
     formats: [],
-    note: 'Lloyds Commercial Banking Online — Bulk List CSV import and Bacs Standard 18.'
+    note: 'Lloyds Commercial Banking Online — CSV templates (BACS & Faster Payment), Bacs Standard 18, and ISO 20022 XML.'
   },
   {
     id: 'barclays',
@@ -45,7 +45,7 @@ const BANKS = [
     initial: 'B',
     status: 'coming-soon',
     formats: [],
-    note: 'Barclays.Net / iPortal — CSV import and Bacs Standard 18.'
+    note: 'Barclays.Net / iPortal — Bacs Standard 18, ISO 20022 XML, and mapped CSV.'
   },
   {
     id: 'hsbc',
@@ -54,7 +54,7 @@ const BANKS = [
     initial: 'H',
     status: 'coming-soon',
     formats: [],
-    note: 'HSBCnet — Bacs Standard 18 and ISO 20022 pain.001 (XML).'
+    note: 'HSBCnet — Bacs Standard 18 (BACS + Faster Payments) and ISO 20022 XML (all payments incl. SEPA).'
   },
   {
     id: 'natwest',
@@ -63,7 +63,7 @@ const BANKS = [
     initial: 'N',
     status: 'coming-soon',
     formats: [],
-    note: 'NatWest Bankline — Bankline Import (Standard 18) and bulk-payment CSV.'
+    note: 'NatWest Bankline — Bacs Standard 18, Bankline CSV, and ISO 20022 XML (pain.001.001.09).'
   }
 ];
 

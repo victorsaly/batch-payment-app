@@ -15,25 +15,18 @@ entry in the bank registry ([`src/banks.js`](src/banks.js)).
 | ✅ **Santander** | Santander Connect | Bacs payment import (HEADER/PAYMENT/TRAILER) · Mixed payments (85-column CSV) |
 | ✅ **Bacs Standard 18** | Cross-bank | Fixed-width credit records (transaction code 99). Tape-label wrappers (VOL1/HDR/UHL1/UTL1/EOF) not emitted — add per your bank's guidance if required. |
 
-## Planned banks
+## Which banks & formats next
 
-| Bank | Channel | Likely format(s) to support | Notes |
-|------|---------|-----------------------------|-------|
-| **Lloyds / Bank of Scotland** | Commercial Banking Online (CBO), LloydsLink | Bulk List CSV import · Bacs Standard 18 | CBO offers a CSV "bulk list" upload; Standard 18 for Bacs bureaus. |
-| **Barclays** | Barclays.Net / iPortal | CSV import · Bacs Standard 18 | iPortal accepts mapped CSV templates and Standard 18. |
-| **HSBC** | HSBCnet | Bacs Standard 18 · ISO 20022 pain.001 (XML) | HSBCnet increasingly favours ISO 20022 XML. |
-| **NatWest / RBS** | Bankline | Bankline Import (Standard 18) · bulk-payment CSV | Bankline has a well-documented fixed-width import. |
-| **TSB / Co-operative / Metro** | Various | Bacs Standard 18 · CSV | Lower priority; mostly Standard 18. |
+The full bank-by-bank matrix of accepted formats (high-street banks **and**
+fintechs like Revolut/Wise) and what PayBatch supports lives in **[FORMATS.md](FORMATS.md)**.
 
-## Cross-bank formats worth prioritising
+Build priority from there:
 
-Two formats are accepted by **many** UK banks, so building them once unlocks
-several banks at a time:
-
-1. **Bacs Standard 18** — the long-standing fixed-width UK bank-to-bank file used by
-   Bacs-approved bureaus. Broadly accepted (Bankline, iPortal, Standard 18 uploads).
-2. **ISO 20022 `pain.001.001.03`** — the modern XML credit-transfer standard that
-   most banks are moving toward for bulk/file payments.
+1. ✅ **Bacs Standard 18** *(done)* — unlocks BACS/FPS credits across HSBC, Barclays,
+   Lloyds, NatWest and Bacs bureaus.
+2. ⭐ **ISO 20022 `pain.001.001.09` (XML)** — highest leverage: one format unlocks
+   CHAPS / SEPA / international across HSBC, Barclays, Lloyds and NatWest.
+3. **Per-bank CSV templates** — starting with Lloyds CBO and Revolut Business.
 
 ## Other planned improvements
 
