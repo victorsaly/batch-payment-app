@@ -136,15 +136,25 @@
 
   <section class="download" id="download">
     <h2>Download PayBatch</h2>
-    <p class="sub">Free for macOS, Windows and Linux. Pick your platform:</p>
+    <p class="sub" id="dl-sub">Free for macOS, Windows and Linux.</p>
+
+    <div class="dl-primary-wrap">
+      <a class="btn primary dl-primary" id="dl-primary"
+         href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+        Download
+      </a>
+      <p class="tiny" id="dl-version">Always free · no account needed</p>
+    </div>
+
+    <p class="tiny dl-other">Or choose your platform:</p>
     <div class="dl-grid">
-      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+      <a class="dl" id="dl-mac" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
         <strong>macOS</strong><span>.dmg (Apple Silicon &amp; Intel)</span>
       </a>
-      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+      <a class="dl" id="dl-win" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
         <strong>Windows</strong><span>.exe installer</span>
       </a>
-      <a class="dl" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
+      <a class="dl" id="dl-linux" href="https://github.com/victorsaly/batch-payment-app/releases/latest" target="_blank" rel="noopener">
         <strong>Linux</strong><span>.AppImage / .deb</span>
       </a>
     </div>
@@ -173,5 +183,66 @@
     <p class="disclaimer">Independent tool — not affiliated with, endorsed by or supported by any bank.
       Always verify payment details and do a test upload before a full run.</p>
   </footer>
+
+  <!-- Detect the visitor's OS and turn the download buttons into direct links to
+       the right installer from the latest GitHub release (no repo browsing). -->
+  <script>
+  (function () {
+    var REPO = 'victorsaly/batch-payment-app';
+    var LABEL = { mac: 'macOS', win: 'Windows', linux: 'Linux' };
+
+    function detectOS() {
+      var p = ((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '').toLowerCase();
+      var ua = (navigator.userAgent || '').toLowerCase();
+      if (/mac/.test(p) || /mac os|macintosh/.test(ua)) return 'mac';
+      if (/win/.test(p) || /windows/.test(ua)) return 'win';
+      if (/linux|x11|ubuntu|debian|fedora/.test(p) || /linux/.test(ua)) return 'linux';
+      return null;
+    }
+
+    function pick(assets, os) {
+      function find(re) {
+        for (var i = 0; i < assets.length; i++) {
+          var n = (assets[i].name || '').toLowerCase();
+          if (re.test(n) && !/\.blockmap$/.test(n)) return assets[i];
+        }
+        return null;
+      }
+      if (os === 'mac') return find(/\.dmg$/);
+      if (os === 'win') return find(/\.exe$/);
+      if (os === 'linux') return find(/\.appimage$/) || find(/\.deb$/);
+      return null;
+    }
+
+    var os = detectOS();
+    var primary = document.getElementById('dl-primary');
+    if (os && primary) primary.textContent = 'Download for ' + LABEL[os];
+
+    fetch('https://api.github.com/repos/' + REPO + '/releases/latest', {
+      headers: { Accept: 'application/vnd.github+json' }
+    })
+      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+      .then(function (rel) {
+        var assets = rel.assets || [];
+        var ver = (rel.tag_name || '').replace(/^v/, '');
+        var cards = { mac: document.getElementById('dl-mac'), win: document.getElementById('dl-win'), linux: document.getElementById('dl-linux') };
+        ['mac', 'win', 'linux'].forEach(function (k) {
+          var a = pick(assets, k);
+          if (a && cards[k]) cards[k].href = a.browser_download_url;
+        });
+        if (os) {
+          var a = pick(assets, os);
+          if (a && primary) primary.href = a.browser_download_url;
+          if (primary) primary.textContent = 'Download for ' + LABEL[os] + (ver ? ' (v' + ver + ')' : '');
+          if (cards[os]) cards[os].classList.add('detected');
+          var sub = document.getElementById('dl-sub');
+          if (sub) sub.textContent = 'We detected ' + LABEL[os] + ' — one click to download' + (ver ? ' v' + ver : '') + '. Or pick another platform below.';
+        }
+        var vEl = document.getElementById('dl-version');
+        if (vEl && ver) vEl.textContent = 'Latest version v' + ver + ' · always free';
+      })
+      .catch(function () { /* keep the releases-page fallback hrefs */ });
+  })();
+  </script>
 </body>
 </html>
