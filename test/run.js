@@ -8,6 +8,8 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
+const { execFileSync } = require('child_process');
 
 const S = require('../src/santander.js');
 const S18 = require('../src/standard18.js');
@@ -17,8 +19,34 @@ const Modulus = require('../src/modulus.js');
 const F = S.OUTPUT_FORMATS;
 
 let passed = 0;
+let skipped = 0;
+const SKIP = Symbol('skip');               // a test fn may `return SKIP` to skip
 const tests = [];
 const test = (name, fn) => tests.push({ name, fn });
+
+// ---- XSD validation helpers (libxml2 / xmllint) ----------------------------
+// The official ISO 20022 schemas are vendored under test/schemas/. Validation
+// shells out to xmllint so the test runner stays dependency-free. When xmllint
+// isn't installed the relevant tests skip (CI installs libxml2-utils so they
+// always run there).
+const HAS_XMLLINT = (() => {
+  try { execFileSync('xmllint', ['--version'], { stdio: 'ignore' }); return true; }
+  catch (_) { return false; }
+})();
+
+let xsdTmpSeq = 0;
+function validateXsd(xsdName, xml) {
+  const tmp = path.join(os.tmpdir(), `paybatch-xsd-${process.pid}-${xsdTmpSeq++}.xml`);
+  fs.writeFileSync(tmp, xml, 'utf8');
+  try {
+    execFileSync('xmllint', ['--noout', '--schema', path.join(__dirname, 'schemas', xsdName), tmp], { stdio: 'pipe' });
+    return { valid: true };
+  } catch (err) {
+    return { valid: false, output: String((err && err.stderr) || (err && err.message) || err) };
+  } finally {
+    try { fs.unlinkSync(tmp); } catch (_) {}
+  }
+}
 
 // ---------------------------------------------------------------- Bacs format
 test('Bacs header line matches the published spec sample', () => {
@@ -265,6 +293,39 @@ test('SEPA row validation: name + valid IBAN required, BIC optional', () => {
   assert.ok(Sepa.validateSepaPayment({ name: 'X', iban: 'DE89370400440532013000', bic: 'BAD', amount: '10' }).fieldErrors.bic);
 });
 
+// ---------------------------------------------------------------- XSD conformance
+// Prove the generated XML is valid against the *official* ISO 20022 schemas,
+// not just our own structural assertions. This catches element ordering,
+// cardinality and datatype regressions that string checks would miss.
+test('ISO 20022 output validates against the official pain.001.001.09 XSD', () => {
+  if (!HAS_XMLLINT) return SKIP;
+  const settings = {
+    debtorName: 'My Company Ltd', debtorSort: '090122', debtorAccount: '11223344',
+    requestedExecutionDate: '2026-06-30', messageId: 'PB-TEST-1', creationDateTime: '2026-06-27T14:30:00'
+  };
+  // Include characters that must be XML-escaped, to prove escaping stays valid.
+  const payments = [
+    { name: 'Acme Ltd', sortCode: '12-34-56', accountNumber: '12345678', amount: '150.50', reference: 'INV-1001' },
+    { name: 'R&D <Co> "Ltd"', sortCode: '654321', accountNumber: '87654321', amount: '87.00', reference: 'WAGES & BONUS' }
+  ];
+  const r = validateXsd('pain.001.001.09.xsd', ISO.buildPain001(settings, payments));
+  assert.ok(r.valid, 'ISO 20022 XML failed schema validation:\n' + r.output);
+});
+
+test('SEPA output validates against the official pain.001.001.03 XSD', () => {
+  if (!HAS_XMLLINT) return SKIP;
+  const settings = {
+    debtorName: 'My Co', debtorIban: 'DE89370400440532013000', debtorBic: '',
+    requestedExecutionDate: '2026-06-30', messageId: 'PB1', creationDateTime: '2026-06-27T14:30:00'
+  };
+  const payments = [
+    { name: 'Acme GmbH', iban: 'DE89370400440532013000', bic: 'DEUTDEFF', amount: '150.50', reference: 'INV-1' },
+    { name: 'Béta & Co <X>', iban: 'FR1420041010050500013M02606', bic: '', amount: '87.00', reference: 'R&D "2026"' }
+  ];
+  const r = validateXsd('pain.001.001.03.xsd', Sepa.buildSepaPain001(settings, payments));
+  assert.ok(r.valid, 'SEPA XML failed schema validation:\n' + r.output);
+});
+
 // ---------------------------------------------------------------- modulus check
 // The official VocaLink test cases (the canonical set covering MOD10/MOD11/DBLAL
 // and the exceptions). These prove the algorithm + bundled weight tables.
@@ -325,8 +386,12 @@ test('No top-level const/let/class name collides across browser scripts', () => 
 // ---------------------------------------------------------------- run
 let failures = 0;
 for (const t of tests) {
-  try { t.fn(); passed++; console.log('  ✓ ' + t.name); }
+  try {
+    if (t.fn() === SKIP) { skipped++; console.log('  ⊘ ' + t.name + ' (skipped)'); }
+    else { passed++; console.log('  ✓ ' + t.name); }
+  }
   catch (err) { failures++; console.log('  ✗ ' + t.name + '\n      ' + err.message); }
 }
-console.log(`\n${passed}/${tests.length} passed${failures ? `, ${failures} FAILED` : ''}`);
+console.log(`\n${passed}/${tests.length} passed${skipped ? `, ${skipped} skipped` : ''}${failures ? `, ${failures} FAILED` : ''}`);
+if (skipped) console.log('  (skipped tests need xmllint — `brew install libxml2` / `apt-get install libxml2-utils`)');
 process.exit(failures ? 1 : 0);

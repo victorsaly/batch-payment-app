@@ -16,5 +16,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # xmllint (libxml2) powers the ISO 20022 / SEPA XSD-conformance tests.
+      - run: sudo apt-get update && sudo apt-get install -y libxml2-utils
       - run: npm run lint
       - run: npm test
+      # The shipped app has zero runtime deps; fail CI only if a *runtime*
+      # dependency ever introduces a known vulnerability. Dev/build-tool
+      # advisories are handled by Dependabot, not gated here.
+      - run: npm audit --omit=dev --audit-level=high

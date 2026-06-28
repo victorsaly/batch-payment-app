@@ -1,0 +1,18 @@
+# Keep the build toolchain and CI actions up to date. PayBatch ships with zero
+# runtime dependencies, so these updates only touch dev/build tooling.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dev-dependencies:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
