@@ -1,6 +1,10 @@
 import { useEffect, useState, useRef } from 'react';
 import { useApp } from '../store.jsx';
 
+// Smooth OS-detecting download page (used only by the dev/unsigned fallback;
+// packaged builds download + install in-app via electron-updater).
+const DOWNLOAD_PAGE = 'https://victorsaly.github.io/batch-payment-app/#download';
+
 /* Update banner. Packaged builds get real electron-updater events (download +
  * install in-app); dev/unpackaged falls back to the lightweight GitHub-API
  * check whose Download button opens the browser. Ported from renderer.js. */
@@ -47,7 +51,7 @@ export default function UpdateBanner({ onWhatsNew }) {
   const onDownload = () => {
     if (state.action === 'download') window.api.downloadUpdate();
     else if (state.action === 'install') window.api.installUpdate();
-    else if (state.url) window.api.openExternal(state.url);
+    else window.api.openExternal(DOWNLOAD_PAGE);
   };
 
   return (
