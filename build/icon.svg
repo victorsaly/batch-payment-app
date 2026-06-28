@@ -1,26 +1,28 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#5b7cfa"/>
+    <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6b8bff"/>
       <stop offset="1" stop-color="#3358d4"/>
     </linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
     <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity="0.18"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#16224a" flood-opacity="0.20"/>
     </filter>
   </defs>
 
-  <!-- rounded app tile -->
-  <rect x="84" y="84" width="856" height="856" rx="196" fill="url(#bg)"/>
+  <rect x="84" y="84" width="856" height="856" rx="210" fill="url(#lg)"/>
+  <rect x="84" y="84" width="856" height="856" rx="210" fill="url(#sheen)"/>
 
-  <!-- batch "rows" motif -->
-  <g filter="url(#sh)">
-    <rect x="286" y="318" width="452" height="74" rx="37" fill="#ffffff" opacity="0.96"/>
-    <rect x="286" y="446" width="452" height="74" rx="37" fill="#ffffff" opacity="0.78"/>
-    <rect x="286" y="574" width="452" height="74" rx="37" fill="#ffffff" opacity="0.60"/>
+  <g filter="url(#sh)" fill="#ffffff">
+    <rect x="262" y="312" width="430" height="74" rx="37" opacity="0.98"/>
+    <rect x="262" y="440" width="430" height="74" rx="37" opacity="0.82"/>
+    <rect x="262" y="568" width="290" height="74" rx="37" opacity="0.66"/>
   </g>
 
-  <!-- pound badge -->
-  <circle cx="712" cy="700" r="150" fill="#ffffff"/>
-  <text x="712" y="772" font-family="Georgia, 'Times New Roman', serif" font-size="230"
+  <circle cx="730" cy="700" r="150" fill="#ffffff"/>
+  <text x="730" y="768" font-family="Georgia, 'Times New Roman', serif" font-size="210"
         font-weight="700" fill="#3358d4" text-anchor="middle">£</text>
 </svg>
