@@ -4,6 +4,26 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.0.6 — 2026-06-28
+
+### Added
+- **Encrypted backup & restore** — save a portable backup of your payees, batches and
+  settings, protected by a password you choose (**AES-256-GCM**). The on-disk store is
+  locked to one machine; a backup lets you move your data to a new computer or keep a
+  safe copy, and the file is unreadable without the password.
+- **Column-mapping on import** — importing a CSV/spreadsheet now opens a "Match your
+  columns" screen, pre-filled with PayBatch's best guess, with a live preview. Map
+  arbitrary spreadsheet layouts (sort code/account, or IBAN/BIC for SEPA) instead of
+  relying on a fixed column order.
+- **In-app auto-update** — PayBatch can now download and install updates itself (with
+  your consent) and restart into the new version, instead of just linking to the
+  Releases page. Available on signed builds.
+
+### Changed
+- **ISO 20022 / SEPA XML is now validated against the official ISO 20022 schemas**
+  (`pain.001.001.09` / `pain.001.001.03`) in the test suite, guarding against format
+  regressions.
+
 ## v1.0.5 — 2026-06-27
 
 ### Changed
