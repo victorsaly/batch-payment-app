@@ -459,7 +459,7 @@ async function openChangelog() {
   const body = $('#changelog-body');
   body.innerHTML = 'Loading…';
   $('#changelog-modal').classList.remove('hidden');
-  let md = '';
+  let md;
   try { md = await window.api.changelog(); } catch (_) { md = '# Changelog\n\nUnavailable.'; }
   body.innerHTML = renderMarkdown(md);
 }
