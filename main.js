@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require('https');
 const crypto = require('crypto');
+const { autoUpdater } = require('electron-updater');
 
 // Where to look for new releases (the GitHub repo backing this app).
 const REPO = { owner: 'victorsaly', repo: 'batch-payment-app' };
@@ -126,7 +127,37 @@ function createWindow() {
 
   win.removeMenu();
   win.loadFile(path.join(__dirname, 'src', 'index.html'));
+  win.webContents.once('did-finish-load', () => setupAutoUpdater(win));
 }
+
+// ---- Auto-update (electron-updater) ----
+// Only runs in a packaged build; in dev there's nothing to update and the
+// renderer falls back to the lightweight GitHub-API check. We never download
+// without consent (autoDownload = false): the renderer shows a banner, the user
+// clicks Download, then Restart & install. Update feed + signatures come from
+// the GitHub Releases published by electron-builder (latest*.yml + blockmaps).
+let updaterReady = false;
+function setupAutoUpdater(win) {
+  if (!app.isPackaged || updaterReady) return;
+  updaterReady = true;
+  autoUpdater.autoDownload = false;
+  autoUpdater.autoInstallOnAppQuit = true;
+  const send = (type, data) => {
+    try { if (win && !win.isDestroyed()) win.webContents.send('update:event', { type, ...data }); } catch (_) {}
+  };
+  autoUpdater.on('update-available', (info) => send('available', { version: info.version }));
+  autoUpdater.on('update-not-available', () => send('none', {}));
+  autoUpdater.on('download-progress', (p) => send('progress', { percent: Math.round(p.percent || 0) }));
+  autoUpdater.on('update-downloaded', (info) => send('downloaded', { version: info.version }));
+  autoUpdater.on('error', (err) => send('error', { message: String((err && err.message) || err) }));
+  autoUpdater.checkForUpdates().catch((err) =>
+    logError({ context: 'autoUpdater', message: String((err && err.message) || err) }));
+}
+
+ipcMain.handle('update:supported', () => app.isPackaged);
+ipcMain.handle('update:check', () => { if (app.isPackaged) autoUpdater.checkForUpdates().catch(() => {}); return app.isPackaged; });
+ipcMain.handle('update:download', () => { autoUpdater.downloadUpdate().catch(() => {}); return true; });
+ipcMain.handle('update:install', () => { autoUpdater.quitAndInstall(); return true; });
 
 // ---- IPC: storage ----
 ipcMain.handle('data:load', () => loadData());

@@ -97,5 +97,8 @@
     "electron-builder": "^25.1.8",
     "eslint": "^9.39.4",
     "globals": "^15.15.0"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
   }
 }

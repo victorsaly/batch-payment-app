@@ -401,9 +401,19 @@ async function initVersionAndUpdates() {
     const fv = $('#footer-version');
     if (fv) fv.textContent = 'PayBatch v' + v;
   } catch (_) {}
-  checkForUpdates(false);
+
+  // In a packaged build electron-updater drives the banner (real in-app
+  // download + install). In dev it isn't available, so fall back to the
+  // lightweight GitHub-API check whose Download button opens the browser.
+  try { autoUpdateMode = await window.api.updateSupported(); } catch (_) { autoUpdateMode = false; }
+  if (autoUpdateMode) window.api.onUpdateEvent(handleUpdateEvent);
+  else checkForUpdates(false);
 }
 
+let autoUpdateMode = false;
+let manualCheckPending = false;
+
+// GitHub-API fallback (dev / unpackaged): banner Download opens the browser.
 async function checkForUpdates(manual) {
   let res;
   try { res = await window.api.checkUpdate(); } catch (_) { res = { ok: false }; }
@@ -411,10 +421,36 @@ async function checkForUpdates(manual) {
   if (res && res.available) {
     $('#update-text').textContent = `PayBatch ${res.latest} is available (you have ${res.current}).`;
     $('#update-banner').dataset.url = res.url || '';
+    $('#update-download').dataset.action = 'open';
+    $('#update-download').textContent = 'Download';
     $('#update-banner').classList.remove('hidden');
   } else if (manual) {
     if (res && res.ok) toast('You’re on the latest version');
     else toast('Could not check for updates right now', true);
+  }
+}
+
+// electron-updater event handler (packaged builds).
+function handleUpdateEvent(p) {
+  const banner = $('#update-banner');
+  const text = $('#update-text');
+  const dl = $('#update-download');
+  if (p.type === 'available') {
+    text.textContent = `PayBatch ${p.version} is available.`;
+    dl.textContent = 'Download'; dl.dataset.action = 'download'; dl.disabled = false;
+    banner.classList.remove('hidden');
+  } else if (p.type === 'progress') {
+    text.textContent = `Downloading update… ${p.percent}%`;
+    dl.disabled = true;
+    banner.classList.remove('hidden');
+  } else if (p.type === 'downloaded') {
+    text.textContent = `Update ${p.version} is ready to install.`;
+    dl.textContent = 'Restart & install'; dl.dataset.action = 'install'; dl.disabled = false;
+    banner.classList.remove('hidden');
+  } else if (p.type === 'none') {
+    if (manualCheckPending) { toast('You’re on the latest version'); manualCheckPending = false; }
+  } else if (p.type === 'error') {
+    if (manualCheckPending) { toast('Could not check for updates right now', true); manualCheckPending = false; }
   }
 }
 
@@ -606,10 +642,12 @@ function wireEvents() {
   $('#modal-save').addEventListener('click', onSavePayee);
   $('#modal-cancel').addEventListener('click', closeModal);
 
-  // Update banner
+  // Update banner — the Download button's job depends on the update mode/stage.
   $('#update-download').addEventListener('click', () => {
-    const url = $('#update-banner').dataset.url;
-    if (url) window.api.openExternal(url);
+    const action = $('#update-download').dataset.action;
+    if (action === 'download') window.api.downloadUpdate();
+    else if (action === 'install') window.api.installUpdate();
+    else { const url = $('#update-banner').dataset.url; if (url) window.api.openExternal(url); }
   });
   $('#update-whatsnew').addEventListener('click', openChangelog);
   $('#update-dismiss').addEventListener('click', () => $('#update-banner').classList.add('hidden'));
@@ -637,7 +675,11 @@ function wireEvents() {
   $('#map-cancel').addEventListener('click', () => { $('#map-modal').classList.add('hidden'); mapState = null; });
   $('#map-close').addEventListener('click', () => { $('#map-modal').classList.add('hidden'); mapState = null; });
   $('#changelog-close').addEventListener('click', () => $('#changelog-modal').classList.add('hidden'));
-  $('#check-updates').addEventListener('click', () => { checkForUpdates(true); toast('Checking for updates…'); });
+  $('#check-updates').addEventListener('click', () => {
+    if (autoUpdateMode) { manualCheckPending = true; window.api.checkForUpdatesAuto(); }
+    else checkForUpdates(true);
+    toast('Checking for updates…');
+  });
 }
 
 // ----------------------------------------------------------------- add payment

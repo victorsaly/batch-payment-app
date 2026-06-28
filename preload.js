@@ -15,6 +15,13 @@ contextBridge.exposeInMainWorld('api', {
   appVersion: () => ipcRenderer.invoke('app:version'),
   changelog: () => ipcRenderer.invoke('app:changelog'),
   checkUpdate: () => ipcRenderer.invoke('app:check-update'),
+  // Auto-update (electron-updater). onUpdateEvent forwards only the payload, not
+  // the raw IPC event, to keep the renderer sandbox clean.
+  updateSupported: () => ipcRenderer.invoke('update:supported'),
+  checkForUpdatesAuto: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  onUpdateEvent: (cb) => ipcRenderer.on('update:event', (_e, payload) => cb(payload)),
   logError: (info) => ipcRenderer.invoke('error:log', info),
   listErrors: () => ipcRenderer.invoke('error:list'),
   revealErrorLog: () => ipcRenderer.invoke('error:reveal'),
