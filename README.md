@@ -36,9 +36,9 @@ your computer**, and what's stored is **encrypted**.
 | --- | --- |
 | ![Home wizard](docs/screenshots/home-wizard.png) | ![Build batch](docs/screenshots/build.png) |
 
-| Bank & format picker | Dark mode |
+| Home — dark mode | Build batch — dark mode |
 | --- | --- |
-| ![Bank picker](docs/screenshots/bank-list.png) | ![Dark mode](docs/screenshots/build-dark.png) |
+| ![Home dark](docs/screenshots/home-dark.png) | ![Build dark](docs/screenshots/build-dark.png) |
 
 ## Features
 
