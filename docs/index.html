@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>PayBatch — bulk bank payments, without the spreadsheet</title>
-  <meta name="description" content="PayBatch is a free, local, offline desktop app that builds and exports UK bank bulk-payment files (Santander Connect, Bacs Standard 18). Encrypted — nothing leaves your machine." />
+  <meta name="description" content="PayBatch is a free, local, offline desktop app that builds and exports UK bank bulk-payment files — Santander Connect, Bacs Standard 18, ISO 20022 (UK GBP) and SEPA (EUR), for HSBC, Barclays, Lloyds, NatWest and more. Encrypted — nothing leaves your machine." />
 
   <!-- Social share (WhatsApp, iMessage, X, LinkedIn) -->
   <meta property="og:type" content="website" />
@@ -69,7 +69,7 @@
   <section class="features" id="features">
     <h2>Everything you need to run a payment batch</h2>
     <div class="grid">
-      <div class="card"><div class="ico">🏦</div><h3>Multiple bank formats</h3><p>Santander Connect (Bacs import &amp; mixed payments) and cross-bank Bacs Standard 18 — reproduced to the byte.</p></div>
+      <div class="card"><div class="ico">🏦</div><h3>Multiple bank formats</h3><p>Santander Connect (Bacs import &amp; mixed payments), cross-bank Bacs Standard 18, and ISO 20022 XML — UK domestic GBP plus SEPA euro payments to IBANs.</p></div>
       <div class="card"><div class="ico">✅</div><h3>Inline validation</h3><p>Every cell is checked live. Bad sort codes, accounts and amounts are flagged before export, so the bank won't reject your file.</p></div>
       <div class="card"><div class="ico">📋</div><h3>Paste from Excel</h3><p>Copy your rows in Excel or Google Sheets and paste straight in — columns are detected automatically.</p></div>
       <div class="card"><div class="ico">🔐</div><h3>Private by design</h3><p>In plain terms: your payees and bank details are scrambled and locked to your computer, so other apps can't read them and they never go online. PayBatch only ever reaches the internet to check for an update.</p></div>
@@ -118,7 +118,7 @@
       <div class="fit-card good">
         <h3>✅ A great fit if you…</h3>
         <ul>
-          <li>Run UK Bacs / bulk payments through <strong>Santander Connect</strong> or a <strong>Standard 18</strong> upload</li>
+          <li>Run UK Bacs / bulk payments through <strong>Santander Connect</strong>, a <strong>Standard 18</strong> upload, or <strong>ISO 20022 / SEPA</strong> XML</li>
           <li>Currently hand-build payment files in Excel and want fewer errors</li>
           <li>Want your beneficiary &amp; bank data to stay on your own machine</li>
         </ul>
@@ -126,8 +126,8 @@
       <div class="fit-card bad">
         <h3>⏳ Not ready yet if you…</h3>
         <ul>
-          <li>Need <strong>Lloyds, Barclays, HSBC or NatWest</strong> — these are coming, not live</li>
-          <li>Need ISO 20022 / pain.001 XML, or Direct Debit collection files</li>
+          <li>Need <strong>Direct Debit collection</strong> files (AUDDIS / DDIC) — credits only for now</li>
+          <li>Need a fintech account — <strong>Revolut, Wise, Tide, Starling or Monzo</strong> are coming, not live</li>
           <li>Need a different bank's exact format — <a href="https://github.com/victorsaly/batch-payment-app/issues" target="_blank" rel="noopener">tell us</a> and we'll prioritise it</li>
         </ul>
       </div>
@@ -150,13 +150,11 @@
     </div>
     <div class="reassure">
       <p><strong>“Is it safe to open?”</strong> Yes. PayBatch is free and fully open source — you can
-      read every line on GitHub. It isn't notarized with a paid Apple certificate yet, so your OS
-      shows a routine warning (normal for independent apps):</p>
-      <p><span>🍎 <strong>macOS</strong> — if you see <em>“PayBatch is damaged”</em>, it's just the
-        un-notarized warning. Move PayBatch to Applications, then run this once in Terminal:</span></p>
-      <pre class="cmd">xattr -dr com.apple.quarantine /Applications/PayBatch.app</pre>
-      <p><span>🪟 <strong>Windows</strong> — if SmartScreen appears, click <em>More info → Run anyway</em>.</span></p>
-      <p class="tiny">Apple notarization is on the roadmap and will remove the macOS step entirely.</p>
+      read every line on GitHub.</p>
+      <p><span>🍎 <strong>macOS</strong> — signed with an Apple Developer ID and notarized by Apple,
+        so it opens with a normal double-click. No Terminal step needed.</span></p>
+      <p><span>🪟 <strong>Windows</strong> — if SmartScreen appears, click <em>More info → Run anyway</em>.
+        (Windows code-signing is on the roadmap.)</span></p>
     </div>
   </section>
 

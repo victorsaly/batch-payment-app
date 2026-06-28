@@ -59,13 +59,11 @@ Grab the latest installer for your OS from the
 | Windows | `PayBatch-Setup-x.y.z.exe` |
 | Linux | `PayBatch-x.y.z.AppImage` / `.deb` |
 
-> **First launch on macOS** — the app isn't notarized yet, so macOS may say
-> *"PayBatch is damaged"*. It isn't — that's just the un-notarized warning. Move
-> PayBatch to **Applications**, then run once in Terminal:
-> ```bash
-> xattr -dr com.apple.quarantine /Applications/PayBatch.app
-> ```
-> **Windows** — if SmartScreen appears, click **More info → Run anyway**.
+> **macOS** — the app is signed with an Apple Developer ID and notarized by Apple,
+> so it opens with a normal double-click (no Terminal step needed).
+>
+> **Windows** — the installer isn't code-signed yet, so SmartScreen may appear;
+> click **More info → Run anyway**.
 
 ## Run from source
 
