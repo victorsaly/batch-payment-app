@@ -93,7 +93,7 @@ jobs:
           sha256sum *.dmg *.zip *.exe *.AppImage *.deb 2>/dev/null > SHA256SUMS.txt || true
           echo "----- SHA256SUMS.txt -----"; cat SHA256SUMS.txt
       - name: Publish draft GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           fail_on_unmatched_files: false
