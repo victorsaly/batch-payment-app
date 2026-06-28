@@ -555,6 +555,26 @@
     </div>
   </div>
 
+  <!-- Column mapping for imported CSV / spreadsheet files -->
+  <div id="map-modal" class="modal-backdrop hidden">
+    <div class="modal modal-wide">
+      <div class="card-head">
+        <h3>Match your columns</h3>
+        <button id="map-close" class="btn ghost tiny">Cancel</button>
+      </div>
+      <p class="muted">Tell PayBatch which column holds each field. We’ve guessed from your
+      file — adjust any that are wrong, then import.</p>
+      <div id="map-fields" class="map-fields"></div>
+      <h4 class="map-preview-title">Preview (first rows)</h4>
+      <div id="map-preview" class="map-preview"></div>
+      <p id="map-error" class="field-msg err"></p>
+      <div class="form-actions">
+        <button id="map-import" class="btn primary">Import</button>
+        <button id="map-cancel" class="btn ghost">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Password prompt (backup encrypt / restore decrypt) -->
   <div id="pw-modal" class="modal-backdrop hidden">
     <div class="modal">

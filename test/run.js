@@ -293,6 +293,43 @@ test('SEPA row validation: name + valid IBAN required, BIC optional', () => {
   assert.ok(Sepa.validateSepaPayment({ name: 'X', iban: 'DE89370400440532013000', bic: 'BAD', amount: '10' }).fieldErrors.bic);
 });
 
+// ---------------------------------------------------------------- column mapping
+test('analyzeImport suggests columns from a re-ordered header CSV', () => {
+  const csv = 'Amount,Reference,Sort Code,Account Number,Beneficiary Name\n'
+    + '"£1,234.56",WAGES,11-22-33,87654321,Bob Ltd';
+  const a = S.analyzeImport(csv);
+  assert.strictEqual(a.generated, false);
+  assert.strictEqual(a.hasHeader, true);
+  assert.strictEqual(a.suggestion.name, 4);
+  assert.strictEqual(a.suggestion.sort, 2);
+  assert.strictEqual(a.suggestion.account, 3);
+  assert.strictEqual(a.suggestion.amount, 0);
+  assert.strictEqual(a.suggestion.reference, 1);
+  assert.strictEqual(a.dataRows.length, 1);
+});
+
+test('analyzeImport detects IBAN/BIC columns for SEPA-style files', () => {
+  const csv = 'Name,IBAN,BIC,Amount,Reference\nAcme,DE89370400440532013000,DEUTDEFF,10.00,R1';
+  const a = S.analyzeImport(csv);
+  assert.strictEqual(a.suggestion.iban, 1);
+  assert.strictEqual(a.suggestion.bic, 2);
+});
+
+test('analyzeImport returns generated:true for a file PayBatch made', () => {
+  const built = S.buildFile(
+    { paymentType: 'BACS', debitSortCode: '090122', debitAccountNumber: '11223344', creationDate: '2012-12-08', fileLocationId: 'X', sequenceNumber: '1', paymentDate: '2012-12-10' },
+    [{ name: 'REDSKY LTD', sortCode: '909090', accountNumber: '55667788', amount: '150.50', reference: 'INV' }]);
+  const a = S.analyzeImport(built);
+  assert.strictEqual(a.generated, true);
+  assert.strictEqual(a.payments.length, 1);
+});
+
+test('rowsToPayments applies a custom mapping and cleans the amount', () => {
+  const rows = [['Bob Ltd', 'WAGES', '11-22-33', '87654321', '£1,234.56']];
+  const out = S.rowsToPayments(rows, { name: 0, reference: 1, sort: 2, account: 3, amount: 4, iban: -1, bic: -1 });
+  assert.deepStrictEqual(out[0], { name: 'Bob Ltd', amount: '1234.56', reference: 'WAGES', sortCode: '11-22-33', accountNumber: '87654321' });
+});
+
 // ---------------------------------------------------------------- XSD conformance
 // Prove the generated XML is valid against the *official* ISO 20022 schemas,
 // not just our own structural assertions. This catches element ordering,

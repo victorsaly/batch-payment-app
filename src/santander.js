@@ -384,11 +384,21 @@ function importPayments(text) {
     }));
   }
 
+  const { looksLikeHeader, idx } = detectColumns(rows);
+  let dataRows = rows.filter(r => !isControl(r));
+  if (looksLikeHeader) dataRows = dataRows.slice(1);
+  return rowsToPayments(dataRows, idx);
+}
+
+// Work out whether row 0 is a header and which column holds which field.
+// Returns { looksLikeHeader, headers (display labels), idx (field -> column
+// index, -1 when not found) }. Shared by importPayments and the mapping UI.
+function detectColumns(rows) {
   const header = rows[0].map(h => h.trim().toLowerCase());
   // Row 0 is a header only if it reads like labels — not if it already looks
   // like payment data (a 6/8-digit number or a decimal amount means it's data,
   // e.g. a single pasted row whose reference happens to contain "ref").
-  const hasKeyword = header.some(h => /name|sort|account|amount|reference|payee|ref/.test(h));
+  const hasKeyword = header.some(h => /name|sort|account|amount|reference|payee|ref|iban|bic|swift/.test(h));
   const looksLikeData = header.some(h => {
     const digits = h.replace(/\D/g, '');
     return digits.length === 6 || digits.length === 8 || /^\d+\.\d{2}$/.test(h.trim());
@@ -396,26 +406,65 @@ function importPayments(text) {
   const looksLikeHeader = hasKeyword && !looksLikeData;
   const find = (...keys) => header.findIndex(h => keys.some(k => h.includes(k)));
 
-  let idx = { name: 0, sort: 1, account: 2, amount: 3, reference: 4 };
-  let dataRows = rows.filter(r => !isControl(r));
+  let idx = { name: 0, sort: 1, account: 2, amount: 3, reference: 4, iban: -1, bic: -1 };
+  let headers = rows[0].map((_, i) => `Column ${i + 1}`);
   if (looksLikeHeader) {
     idx = {
       name: find('beneficiary', 'payee', 'name'),
       sort: find('sort'),
       account: find('account'),
       amount: find('amount', 'value'),
-      reference: find('reference', 'ref')
+      reference: find('reference', 'ref'),
+      iban: find('iban'),
+      bic: find('bic', 'swift')
     };
-    dataRows = dataRows.slice(1);
+    headers = rows[0].map(h => h.trim());
   }
-  const col = (r, i) => (i >= 0 && i < r.length ? r[i].trim() : '');
-  return dataRows.map(r => ({
-    name: col(r, idx.name),
-    sortCode: col(r, idx.sort),
-    accountNumber: col(r, idx.account),
-    amount: col(r, idx.amount).replace(/[£,]/g, ''),
-    reference: col(r, idx.reference)
-  }));
+  return { looksLikeHeader, headers, idx };
+}
+
+// Build payment objects from data rows using a field -> column-index map. Only
+// the sort/account or iban/bic columns actually mapped (>= 0) are emitted, so
+// Bacs and SEPA imports both come from the same applier.
+function rowsToPayments(dataRows, idx) {
+  const col = (r, i) => (i >= 0 && i < r.length ? String(r[i]).trim() : '');
+  return dataRows.map(r => {
+    const p = {
+      name: col(r, idx.name),
+      amount: col(r, idx.amount).replace(/[£,]/g, ''),
+      reference: col(r, idx.reference)
+    };
+    if (idx.sort >= 0) p.sortCode = col(r, idx.sort);
+    if (idx.account >= 0) p.accountNumber = col(r, idx.account);
+    if (idx.iban >= 0) p.iban = col(r, idx.iban).replace(/\s+/g, '');
+    if (idx.bic >= 0) p.bic = col(r, idx.bic).replace(/\s+/g, '');
+    return p;
+  });
+}
+
+// Analyse a delimited blob for the column-mapping screen. For a file PayBatch
+// produced itself, mapping is unnecessary — returns { generated:true, payments }.
+// Otherwise returns the parsed data rows, display headers, a best-guess
+// suggestion (field -> column index) and a small preview for the modal.
+function analyzeImport(text) {
+  const delim = text.indexOf('\t') !== -1 ? '\t' : ',';
+  const rows = parseDelimited(text, delim);
+  if (!rows.length) return { generated: false, headers: [], dataRows: [], hasHeader: false, suggestion: {}, preview: [] };
+
+  const isMixedRow = (r) => r.length >= 37 && (r[MIXED.idx.type] || '').trim() === MIXED.typeCode
+    && (r[MIXED.idx.name] || '').trim() !== '';
+  const isGeneratedPayment = (r) => /^payment$/i.test((r[0] || '').trim()) &&
+    /^(bacs|multibacs)$/i.test((r[1] || '').trim());
+  if (rows.some(isMixedRow) || rows.some(isGeneratedPayment)) {
+    return { generated: true, payments: importPayments(text) };
+  }
+
+  const isControl = (r) => /^payment$/i.test((r[0] || '').trim()) &&
+    /^(header|trailer)$/i.test((r[1] || '').trim());
+  const { looksLikeHeader, headers, idx } = detectColumns(rows);
+  let dataRows = rows.filter(r => !isControl(r));
+  if (looksLikeHeader) dataRows = dataRows.slice(1);
+  return { generated: false, hasHeader: looksLikeHeader, headers, dataRows, suggestion: idx, preview: dataRows.slice(0, 3) };
 }
 
 const Santander = {
@@ -424,6 +473,7 @@ const Santander = {
   buildFile, buildHeaderLine, buildPaymentLine, buildTrailerLine,
   buildMixedFile, buildMixedLine, buildOutput,
   importPayments, parseCsv, parseDelimited, buildTemplate,
+  analyzeImport, detectColumns, rowsToPayments,
   sanitizeFreeText, sanitizeMixedText, sanitizeRti, formatSortCode, formatAmount,
   toDDMMYYYY, fromDDMMYYYY, todayISO, totalAmount, hashTotal
 };

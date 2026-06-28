@@ -633,6 +633,9 @@ function wireEvents() {
   $('#errorlog-clear').addEventListener('click', async () => { await window.api.clearErrors(); openErrorLog(); toast('Error log cleared'); });
   $('#backup-data').addEventListener('click', onBackupData);
   $('#restore-data').addEventListener('click', onRestoreData);
+  $('#map-import').addEventListener('click', applyColumnMapping);
+  $('#map-cancel').addEventListener('click', () => { $('#map-modal').classList.add('hidden'); mapState = null; });
+  $('#map-close').addEventListener('click', () => { $('#map-modal').classList.add('hidden'); mapState = null; });
   $('#changelog-close').addEventListener('click', () => $('#changelog-modal').classList.add('hidden'));
   $('#check-updates').addEventListener('click', () => { checkForUpdates(true); toast('Checking for updates…'); });
 }
@@ -838,12 +841,84 @@ async function onImport() {
   const res = await withBusy($('#import-btn'), () => window.api.importFile());
   if (!res || !res.imported) return;
   try {
-    const rows = S.importPayments(res.contents);
-    if (!rows.length) { toast('No payment rows found in that file', true); return; }
-    batch = batch.concat(rows);
-    renderBatch();
-    toast(`Imported ${rows.length} payment${rows.length > 1 ? 's' : ''} — review highlighted rows`);
+    const analysis = S.analyzeImport(res.contents);
+    // A file PayBatch produced itself maps unambiguously — import straight away.
+    if (analysis.generated) {
+      addImportedRows(analysis.payments);
+      return;
+    }
+    if (!analysis.dataRows.length) { toast('No payment rows found in that file', true); return; }
+    openColumnMapper(analysis);
   } catch (_err) { toast('Could not read that file', true); }
+}
+
+function addImportedRows(rows) {
+  if (!rows || !rows.length) { toast('No payment rows found in that file', true); return; }
+  batch = batch.concat(rows);
+  renderBatch();
+  toast(`Imported ${rows.length} payment${rows.length > 1 ? 's' : ''} — review highlighted rows`);
+}
+
+// Fields to map, by output format. SEPA needs IBAN/BIC; everything else uses
+// sort code + account number.
+function mapFieldDefs() {
+  if (settings.outputFormat === SEPA) {
+    return [
+      { key: 'name', label: 'Beneficiary name', required: true },
+      { key: 'iban', label: 'IBAN', required: true },
+      { key: 'bic', label: 'BIC (optional)', required: false },
+      { key: 'amount', label: 'Amount', required: true },
+      { key: 'reference', label: 'Reference', required: false }
+    ];
+  }
+  return [
+    { key: 'name', label: 'Beneficiary name', required: true },
+    { key: 'sort', label: 'Sort code', required: true },
+    { key: 'account', label: 'Account number', required: true },
+    { key: 'amount', label: 'Amount', required: true },
+    { key: 'reference', label: 'Reference', required: false }
+  ];
+}
+
+let mapState = null;   // { dataRows, headers }
+
+function openColumnMapper(analysis) {
+  mapState = { dataRows: analysis.dataRows, headers: analysis.headers };
+  const defs = mapFieldDefs();
+  const sugg = analysis.suggestion || {};
+
+  const options = (selected) => '<option value="-1">— none —</option>' + analysis.headers
+    .map((h, i) => `<option value="${i}"${i === selected ? ' selected' : ''}>${esc(h)}</option>`).join('');
+
+  $('#map-fields').innerHTML = defs.map((d) => `
+    <label class="map-field">
+      <span>${esc(d.label)}${d.required ? ' *' : ''}</span>
+      <select data-field="${d.key}">${options(sugg[d.key] == null ? -1 : sugg[d.key])}</select>
+    </label>`).join('');
+
+  // Small preview table so the user can see which column is which.
+  const head = '<tr>' + analysis.headers.map((h) => `<th>${esc(h)}</th>`).join('') + '</tr>';
+  const body = analysis.preview.map((r) =>
+    '<tr>' + analysis.headers.map((_, i) => `<td>${esc(r[i] == null ? '' : r[i])}</td>`).join('') + '</tr>').join('');
+  $('#map-preview').innerHTML = `<table class="preview-table">${head}${body}</table>`;
+
+  $('#map-error').textContent = '';
+  $('#map-modal').classList.remove('hidden');
+}
+
+function applyColumnMapping() {
+  const defs = mapFieldDefs();
+  const selects = $$('#map-fields select');
+  const mapping = { name: -1, sort: -1, account: -1, amount: -1, reference: -1, iban: -1, bic: -1 };
+  selects.forEach((s) => { mapping[s.dataset.field] = parseInt(s.value, 10); });
+
+  const missing = defs.filter((d) => d.required && mapping[d.key] < 0).map((d) => d.label);
+  if (missing.length) { $('#map-error').textContent = 'Please choose a column for: ' + missing.join(', '); return; }
+
+  const rows = S.rowsToPayments(mapState.dataRows, mapping);
+  $('#map-modal').classList.add('hidden');
+  mapState = null;
+  addImportedRows(rows);
 }
 
 async function onExport() {
