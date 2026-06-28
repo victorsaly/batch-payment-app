@@ -61,6 +61,14 @@ jobs:
             echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
           fi
 
+      # Build the React renderer into src/renderer-dist BEFORE packaging — it's
+      # gitignored, so without this step the app ships with no UI (white screen).
+      - name: Build renderer (React + Vite)
+        run: npm run build:renderer
+      - name: Verify renderer bundle exists
+        shell: bash
+        run: test -f src/renderer-dist/index.html || (echo "renderer-dist missing — build failed" && exit 1)
+
       - name: Build installers (no publish)
         run: npx electron-builder --publish never
       - name: Upload installers

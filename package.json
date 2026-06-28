@@ -1,7 +1,7 @@
 {
   "name": "batch-payment-app",
   "productName": "PayBatch",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "PayBatch — a local, offline desktop app to build and export your bank's bulk-payment files (Bacs, Bacs Standard 18, ISO 20022, SEPA), with UK modulus checking. Supports Santander, HSBC, Barclays, Lloyds, NatWest and more. Replaces the clunky Excel process.",
   "main": "main.js",
   "author": "Victor Saly <info@victorsaly.com>",
