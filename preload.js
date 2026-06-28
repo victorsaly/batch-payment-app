@@ -21,7 +21,13 @@ contextBridge.exposeInMainWorld('api', {
   checkForUpdatesAuto: () => ipcRenderer.invoke('update:check'),
   downloadUpdate: () => ipcRenderer.invoke('update:download'),
   installUpdate: () => ipcRenderer.invoke('update:install'),
-  onUpdateEvent: (cb) => ipcRenderer.on('update:event', (_e, payload) => cb(payload)),
+  // Returns a teardown that removes the listener (so the renderer can clean up
+  // on unmount / HMR and avoid accumulating duplicate listeners).
+  onUpdateEvent: (cb) => {
+    const handler = (_e, payload) => cb(payload);
+    ipcRenderer.on('update:event', handler);
+    return () => ipcRenderer.removeListener('update:event', handler);
+  },
   logError: (info) => ipcRenderer.invoke('error:log', info),
   listErrors: () => ipcRenderer.invoke('error:list'),
   revealErrorLog: () => ipcRenderer.invoke('error:reveal'),

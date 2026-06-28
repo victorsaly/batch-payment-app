@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { validateRow, SEPA } from '../lib/payments.js';
 import * as Core from '../core.js';
 
@@ -61,7 +61,9 @@ const Row = memo(function Row({ row, index, cells, settings, onCell, onRemove })
 });
 
 export default function BatchGrid({ batch, settings, onCell, onRemove }) {
-  const cells = visibleCells(settings.outputFormat);
+  // Stable `cells` reference unless the format changes — otherwise a new array
+  // each render would pass through to every Row and defeat React.memo.
+  const cells = useMemo(() => visibleCells(settings.outputFormat), [settings.outputFormat]);
   return (
     <div className="table-wrap">
       <table className="editable">

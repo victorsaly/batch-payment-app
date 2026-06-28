@@ -319,6 +319,7 @@ body {
 }
 .bank-row { cursor: pointer; transition: background var(--dur-fast); }
 .bank-row:hover { background: var(--surface-2); }
+.bank-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 .bank-row.active { background: var(--accent-soft); }
 .bank-row.soon { opacity: .6; }
 .bank-cell { display: flex; align-items: center; gap: 11px; font-weight: 600; }

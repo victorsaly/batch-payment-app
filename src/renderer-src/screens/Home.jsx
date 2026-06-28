@@ -14,8 +14,16 @@ const FMT_LABEL = { BACS_IMPORT: 'Bacs', MIXED: 'Mixed', STANDARD18: 'Std 18', I
 
 function BankRow({ bank, active, onSelect }) {
   const soon = bank.status !== 'available';
+  const choose = () => onSelect(bank.id);
   return (
-    <tr className={'bank-row' + (active ? ' active' : '') + (soon ? ' soon' : '')} onClick={() => onSelect(bank.id)}>
+    <tr
+      className={'bank-row' + (active ? ' active' : '') + (soon ? ' soon' : '')}
+      onClick={choose}
+      tabIndex={0}
+      role="button"
+      aria-pressed={active}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(); } }}
+    >
       <td className="bank-cell">
         <span className="bank-badge sm" style={{ backgroundColor: bank.color }}>{bank.initial}</span>
         <span className="bank-name">{bank.name}</span>

@@ -107,11 +107,11 @@ export function AppProvider({ children }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Persist current data + serialized settings.
+  // Persist current data + serialized settings. Always build a fresh object so
+  // we never mutate the current state (or an object a caller passed in).
   const persist = useCallback((nextData) => {
-    const merged = nextData || dataRef.current;
-    merged.settings = serializeSettings(settingsRef.current);
-    setData({ ...merged });
+    const merged = { ...(nextData || dataRef.current), settings: serializeSettings(settingsRef.current) };
+    setData(merged);
     try { window.api.saveData(merged); } catch (_) { /* ignore */ }
   }, []);
 

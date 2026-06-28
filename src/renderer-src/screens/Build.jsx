@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useApp } from '../store.jsx';
 import { validateRow, emptyPayment, SEPA, ISO20022, STANDARD18, EXPORT_LABELS } from '../lib/payments.js';
 import SettingsCard from '../components/SettingsCard.jsx';
@@ -45,7 +45,6 @@ export default function Build() {
   }, [view, intent, available, onImport, setIntent]);
 
   // ---- paste straight from Excel/Sheets (tabular clipboard) ----
-  const batchRef = useRef(batch); batchRef.current = batch;
   useEffect(() => {
     const onPaste = (e) => {
       if (view !== 'batch' || !available) return;
