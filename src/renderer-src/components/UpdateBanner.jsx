@@ -10,7 +10,7 @@ const DOWNLOAD_PAGE = 'https://victorsaly.github.io/batch-payment-app/#download'
  * check whose Download button opens the browser. Ported from renderer.js. */
 export default function UpdateBanner({ onWhatsNew }) {
   const { showToast } = useApp();
-  const [state, setState] = useState({ visible: false, text: '', action: 'open', label: 'Download', url: '', busy: false });
+  const [state, setState] = useState({ visible: false, text: '', action: 'open', busy: false });
   const autoMode = useRef(false);
   const manualPending = useRef(false);
 
@@ -24,7 +24,7 @@ export default function UpdateBanner({ onWhatsNew }) {
       if (supported) {
         off = window.api.onUpdateEvent((p) => {
           if (p.type === 'available') {
-            setState({ visible: true, text: `PayBatch ${p.version} is available.`, action: 'download', label: 'Download', url: '', busy: false });
+            setState({ visible: true, text: `PayBatch ${p.version} is available.`, action: 'download', label: 'Download', busy: false });
           } else if (p.type === 'progress') {
             setState((s) => ({ ...s, visible: true, text: `Downloading update… ${p.percent}%`, busy: true }));
           } else if (p.type === 'downloaded') {
@@ -39,7 +39,7 @@ export default function UpdateBanner({ onWhatsNew }) {
         let res;
         try { res = await window.api.checkUpdate(); } catch (_) { res = { ok: false }; }
         if (res && res.available) {
-          setState({ visible: true, text: `PayBatch ${res.latest} is available (you have ${res.current}).`, action: 'open', label: 'Download', url: res.url || '', busy: false });
+          setState({ visible: true, text: `PayBatch ${res.latest} is available (you have ${res.current}).`, action: 'open', label: 'Download', busy: false });
         }
       }
     })();
