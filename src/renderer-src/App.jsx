@@ -6,7 +6,6 @@ import Footer from './components/Footer.jsx';
 import ChangelogModal from './components/ChangelogModal.jsx';
 import ErrorLogModal from './components/ErrorLogModal.jsx';
 import ErrorModal from './components/ErrorModal.jsx';
-import logoUrl from '../logo.svg';
 
 import Home from './screens/Home.jsx';
 import Build from './screens/Build.jsx';
@@ -14,13 +13,40 @@ import Payees from './screens/Payees.jsx';
 import History from './screens/History.jsx';
 import Help from './screens/Help.jsx';
 
+function SplashLogo() {
+  return (
+    <svg className="splash-logo" viewBox="0 0 1024 1024" role="img" aria-label="PayBatch">
+      <defs>
+        <linearGradient id="slg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6b8bff" />
+          <stop offset="1" stopColor="#3358d4" />
+        </linearGradient>
+        <linearGradient id="ssh" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#ffffff" stopOpacity="0.22" />
+          <stop offset="0.55" stopColor="#ffffff" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <g className="sl-tile">
+        <rect x="64" y="64" width="896" height="896" rx="232" fill="url(#slg)" />
+        <rect x="64" y="64" width="896" height="896" rx="232" fill="url(#ssh)" />
+      </g>
+      <rect className="sl-row" style={{ '--d': '120ms' }} x="248" y="300" width="440" height="74" rx="37" fill="rgba(255,255,255,.98)" />
+      <rect className="sl-row" style={{ '--d': '220ms' }} x="248" y="430" width="440" height="74" rx="37" fill="rgba(255,255,255,.82)" />
+      <rect className="sl-row" style={{ '--d': '320ms' }} x="248" y="560" width="300" height="74" rx="37" fill="rgba(255,255,255,.66)" />
+      <g className="sl-coin">
+        <circle cx="730" cy="700" r="150" fill="#ffffff" />
+        <text x="730" y="768" fontFamily="Georgia, 'Times New Roman', serif" fontSize="210" fontWeight="700" fill="#3358d4" textAnchor="middle">£</text>
+      </g>
+    </svg>
+  );
+}
+
 function Splash({ gone }) {
   return (
     <div id="splash" className={gone ? 'hide' : ''} style={gone ? { display: 'none' } : undefined}>
-      <img src={logoUrl} className="splash-logo" alt="" />
-      <div className="splash-name">PayBatch</div>
+      <SplashLogo />
+      <div className="splash-name">Pay<span>Batch</span></div>
       <div className="splash-tag">Bulk payments, without the spreadsheet</div>
-      <div className="splash-spinner"></div>
     </div>
   );
 }
@@ -41,7 +67,7 @@ export default function App() {
   // Reveal the app once data is ready, holding the splash briefly for a smooth start.
   useEffect(() => {
     if (!ready) return;
-    const t = setTimeout(() => setSplashGone(true), 500);
+    const t = setTimeout(() => setSplashGone(true), 1150); // let the logo animation play
     return () => clearTimeout(t);
   }, [ready]);
 

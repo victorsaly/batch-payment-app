@@ -27,7 +27,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="brand sidebar-brand" title="Go to home" onClick={() => navigate('home')}>
         <img className="logo" src={logoUrl} alt="PayBatch logo" />
-        <h1>PayBatch</h1>
+        <h1>Pay<span>Batch</span></h1>
       </div>
 
       <nav className="sidebar-nav">
