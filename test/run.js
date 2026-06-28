@@ -401,11 +401,13 @@ test('Modulus check returns checked:false for an unlisted sort code', () => {
 });
 
 // ---------------------------------------------------------------- safety net
-// The src/*.js browser scripts share one global scope at runtime, so a top-level
-// const/let/class with the same name in two files is a fatal SyntaxError that
-// ESLint can't see (it lints per-file). This guard catches that class of bug.
-test('No top-level const/let/class name collides across browser scripts', () => {
-  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'sepa.js', 'modulus-data.js', 'modulus.js', 'renderer.js'];
+// The core engine scripts each assign to a window global and are also imported
+// by the React renderer (src/renderer-src/core.js). A top-level const/let/class
+// with the same name across two of them would collide if ever loaded as classic
+// scripts; this guard catches that class of bug. (The old monolithic
+// renderer.js was retired in the React migration.)
+test('No top-level const/let/class name collides across engine scripts', () => {
+  const files = ['banks.js', 'santander.js', 'standard18.js', 'iso20022.js', 'sepa.js', 'modulus-data.js', 'modulus.js'];
   const seen = {};
   const dupes = [];
   for (const f of files) {

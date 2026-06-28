@@ -4,6 +4,7 @@ node_modules/
 # Build / packaging output
 dist/
 out/
+src/renderer-dist/
 *.dmg
 *.exe
 *.AppImage

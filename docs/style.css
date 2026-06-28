@@ -1,5 +1,5 @@
 :root {
-  --red: #ec0000; --red-dark: #b30000; --ink: #1b2230; --muted: #6b7685;
+  --red: #3e63dd; --red-dark: #3358d4; --ink: #1b2230; --muted: #6b7685;
   --line: #e6e9ef; --bg: #f6f8fb; --card: #fff;
   --ok: #1a8754; --err: #d83a3a;
   --shadow: 0 1px 3px rgba(20,30,50,.08), 0 12px 30px rgba(20,30,50,.08);
@@ -34,7 +34,7 @@ a { color: inherit; }
   max-width: 1140px; margin: 0 auto; padding: 70px 28px 40px;
 }
 @media (max-width: 880px) { .hero { grid-template-columns: 1fr; padding-top: 44px; } }
-.pill { display: inline-block; background: #fde7e7; color: var(--red); font-weight: 700; font-size: 12.5px;
+.pill { display: inline-block; background: #eef1fd; color: var(--red); font-weight: 700; font-size: 12.5px;
   padding: 5px 12px; border-radius: 20px; }
 .hero h1 { font-size: 48px; line-height: 1.07; margin: 16px 0 14px; }
 @media (max-width: 880px) { .hero h1 { font-size: 36px; } }

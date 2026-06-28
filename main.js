@@ -126,7 +126,17 @@ function createWindow() {
   });
 
   win.removeMenu();
-  win.loadFile(path.join(__dirname, 'src', 'index.html'));
+
+  // Dev: load the Vite dev server (HMR). Packaged: load the static built
+  // renderer. The strict, network-free CSP lives in the built index.html only
+  // (Vite's dev server needs ws + eval for HMR); see vite.config.js.
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, 'src', 'renderer-dist', 'index.html'));
+  } else {
+    win.loadURL(process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173');
+    win.webContents.openDevTools({ mode: 'detach' });
+  }
+
   win.webContents.once('did-finish-load', () => setupAutoUpdater(win));
 }
 

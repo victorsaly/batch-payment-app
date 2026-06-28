@@ -30,13 +30,26 @@ Enter payments (or import/paste from Excel), fix any problems with **inline vali
 Bacs, ISO 20022 or SEPA. Everything runs on your own machine — **no data ever leaves
 your computer**, and what's stored is **encrypted**.
 
+## Screenshots
+
+| Choose your bank — guided wizard | Build batch |
+| --- | --- |
+| ![Home wizard](docs/screenshots/home-wizard.png) | ![Build batch](docs/screenshots/build.png) |
+
+| Bank & format picker | Dark mode |
+| --- | --- |
+| ![Bank picker](docs/screenshots/bank-list.png) | ![Dark mode](docs/screenshots/build-dark.png) |
+
 ## Features
 
 - ✅ **Multiple banks & formats** — Santander (Bacs import + mixed payments), plus the
   cross-bank standards **Bacs Standard 18**, **ISO 20022** (UK domestic GBP) and **SEPA**
   (euro/IBAN). Pick your bank and the right format is offered. *(Verify with a test
   upload — formats are built from public specs.)*
-- ✅ **Searchable bank picker** — a grouped, searchable card grid (Available / Coming soon).
+- ✅ **Guided wizard** — a step-by-step start (Choose your bank → Start your batch →
+  Build & export) with a searchable bank/format list that separates **banks** from
+  **cross-bank formats** and shows each option's supported formats.
+- ✅ **Light & dark themes** — System / Light / Dark, remembered between launches.
 - ✅ **UK modulus check** — the official VocaLink check flags sort code/account
   combinations that can't be real accounts (likely typos), as an amber warning.
 - ✅ **Inline, per-field validation** — bad cells are highlighted with the reason; the
@@ -71,10 +84,11 @@ Grab the latest installer for your OS from the
 git clone https://github.com/victorsaly/batch-payment-app.git
 cd batch-payment-app
 npm install
-npm start
+npm start            # Vite dev server + Electron, with hot reload
 ```
 
-Requires Node.js 18+.
+Requires Node.js 18+. The UI is **React + Vite**; the payment-format engines are pure,
+dependency-free modules reused by the renderer via `src/renderer-src/core.js`.
 
 ## Build installers locally
 
@@ -162,8 +176,10 @@ The complete layout for both formats lives in one file:
 |------|---------|
 | `main.js` | Electron main process — window, encrypted storage, import/export dialogs |
 | `preload.js` | Secure IPC bridge between UI and filesystem |
-| `src/santander.js` | **Format engines + validation** (`SPEC` / `MIXED`) |
-| `src/index.html` · `styles.css` · `renderer.js` | The user interface |
+| `src/santander.js` · `standard18.js` · `iso20022.js` · `sepa.js` · `modulus.js` | **Pure format engines + validation** |
+| `src/banks.js` | Bank / cross-bank-format registry |
+| `src/renderer-src/` | React + Vite UI (screens, components, store); reuses the engines via `core.js` |
+| `src/styles.css` | Design-token stylesheet (light + dark) |
 | `test/run.js` | Dependency-free test suite (`npm test`) |
 | `.github/workflows/` | CI + release pipelines |
 

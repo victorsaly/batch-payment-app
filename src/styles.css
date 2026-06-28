@@ -132,7 +132,9 @@
    ignores our theme tokens) — make them inherit so button-based tiles/cards
    read correctly in dark mode. Explicit colours below still override this. */
 button { color: inherit; }
-html, body { height: 100%; }
+/* Full-height chain so the shell fills the viewport and the footer pins to the
+   bottom (#root is the React mount point). */
+html, body, #root { height: 100%; }
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -263,6 +265,82 @@ body {
 .recent-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; }
 .recent-row:last-child { border-bottom: none; }
 .recent-empty { color: var(--text-secondary); font-size: 13.5px; }
+
+/* =====================================================================
+   Home wizard — fits one screen; bank list scrolls internally
+   ===================================================================== */
+.wizard { max-width: 900px; margin: 0 auto; height: 100%; display: flex; flex-direction: column; }
+.wizard-head { flex: none; text-align: center; padding: var(--space-3) 0 var(--space-4); }
+.wizard-head h1 { font-size: 26px; letter-spacing: -.025em; margin: 8px 0 10px; }
+.wizard-head .home-eyebrow { margin-bottom: 6px; }
+.wizard-head .home-trust { margin: 4px 0 0; }
+
+/* timeline stepper */
+.stepper { display: flex; list-style: none; margin: var(--space-4) auto 0; padding: 0; max-width: 560px; width: 100%; }
+.stepper-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; position: relative; text-align: center; padding: 0 4px; }
+.stepper-item::before {
+  content: ''; position: absolute; top: 17px; left: -50%; width: 100%; height: 2px;
+  background: var(--border); z-index: 0;
+}
+.stepper-item:first-child::before { display: none; }
+.stepper-item.done::before, .stepper-item.on::before { background: var(--accent); }
+.stepper-node {
+  position: relative; z-index: 1; width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--surface); color: var(--text-muted);
+  font-weight: 700; font-size: 14px; display: grid; place-items: center; cursor: pointer;
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
+}
+.stepper-node:disabled { cursor: default; }
+.stepper-item.on .stepper-node { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 4px var(--accent-soft); }
+.stepper-item.done .stepper-node { border-color: var(--accent); background: var(--accent); color: var(--accent-fg); }
+.stepper-label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+.stepper-item.on .stepper-label { color: var(--text); }
+.stepper-item.done .stepper-label { color: var(--text-secondary); }
+
+.wizard-body { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--space-3); padding-top: var(--space-2); }
+.wizard-body-center { justify-content: center; }
+.wizard-body .bank-search {
+  margin: var(--space-2) auto var(--space-3); max-width: 420px;
+  padding: 11px 15px; font-size: 14.5px;
+}
+.wizard-scroll { flex: 1; max-height: none; }
+
+/* bank picker as a scannable list/table */
+.bank-legend { max-width: 560px; margin: 0 auto; text-align: center; font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+.bank-legend strong { color: var(--text); }
+.bank-list { background: var(--surface); padding: 0; }
+.bank-table { width: 100%; border-collapse: collapse; }
+.bank-table td { padding: 9px 14px; vertical-align: middle; border-bottom: 1px solid var(--border); white-space: nowrap; }
+.bank-table tr:last-child td { border-bottom: none; }
+.bank-group-row td {
+  background: var(--surface-2); color: var(--text-muted);
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  padding: 7px 14px; cursor: default;
+}
+.bank-row { cursor: pointer; transition: background var(--dur-fast); }
+.bank-row:hover { background: var(--surface-2); }
+.bank-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.bank-row.active { background: var(--accent-soft); }
+.bank-row.soon { opacity: .6; }
+.bank-cell { display: flex; align-items: center; gap: 11px; font-weight: 600; }
+.bank-badge.sm { width: 32px; height: 32px; border-radius: 9px; font-size: 13px; }
+.bank-formats { width: 100%; white-space: normal; }
+.fmt-chip {
+  display: inline-block; font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  background: var(--surface-3); border-radius: var(--radius-full); padding: 2px 9px; margin: 2px 4px 2px 0;
+}
+.bank-status-cell { color: var(--text-muted); font-size: 12px; text-align: right; }
+.bank-check { width: 28px; color: var(--accent); text-align: center; }
+
+.wizard-bankpick {
+  display: flex; align-items: center; gap: 10px; justify-content: center;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+  padding: 10px 16px; max-width: 420px; margin: 0 auto var(--space-2);
+}
+.wizard-bankpick > div { line-height: 1.2; }
+.wizard-recent { text-align: center; color: var(--text-secondary); font-size: 13px; margin: var(--space-3) 0 0; }
+
+.wizard-nav { flex: none; display: flex; align-items: center; justify-content: space-between; padding-top: var(--space-4); }
 
 /* =====================================================================
    Layout
@@ -570,15 +648,29 @@ tr.has-error td { background: var(--danger-bg); }
 /* =====================================================================
    Modal
    ===================================================================== */
-.modal-backdrop {
+.modal-backdrop,
+.modal-overlay {
   position: fixed; inset: 0; background: rgba(15, 20, 30, .5);
-  display: grid; place-items: center; z-index: 50;
+  z-index: 50;
   animation: fadeIn var(--dur) var(--ease-out);
 }
+.modal-backdrop { display: grid; place-items: center; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .modal-backdrop { animation: none; } }
+@keyframes modalIn { from { opacity: 0; transform: translate(-50%, -48%) scale(.98); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .modal-backdrop, .modal-overlay, .modal { animation: none; } }
 .modal {
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg);
   padding: var(--space-6); width: 440px; max-width: 92vw; box-shadow: var(--shadow-md);
 }
+/* Radix renders content as a sibling of the overlay, so it centres itself. */
+.modal-overlay + .modal,
+.modal[data-state] {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 51; max-height: 88vh; overflow: auto;
+  animation: modalIn var(--dur) var(--ease-out);
+}
 .modal h3 { margin: 0 0 var(--space-4); }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}

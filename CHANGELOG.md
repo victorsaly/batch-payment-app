@@ -4,6 +4,24 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.2.0 — 2026-06-28
+
+### Changed
+- **Rebuilt the interface on React + Vite** (with Radix UI for accessible dialogs/menus),
+  keeping the v1.1.0 design system. The pure payment-format engines (Bacs, Standard 18,
+  ISO 20022, SEPA, modulus) are unchanged, so **every exported file is byte-identical**.
+- **Home is now a guided wizard** with a timeline: ① Choose your bank → ② Start your
+  batch → ③ Build & export.
+- **Bank picker is a scannable list** that shows each option's supported formats, and now
+  clearly separates **Banks** from **Cross-bank formats** (Bacs Standard 18, ISO 20022).
+- App window fills the full height with the footer pinned to the bottom; the status bar
+  shows a clean "Encrypted & stored on this device" (full path on hover).
+- App icon rebranded to the new indigo identity.
+
+### Developer
+- Renderer dev server with hot-reload (`npm run dev`); packaged builds load the static
+  bundle under the same strict, network-free CSP. `npm test` remains the format guard.
+
 ## v1.1.0 — 2026-06-28
 
 ### Changed
