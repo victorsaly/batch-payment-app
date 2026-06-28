@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Download, LayoutGrid, Lock, WifiOff, ShieldCheck, ArrowRight, ArrowLeft, Check } from 'lucide-react';
+import { Plus, Download, LayoutGrid, Lock, WifiOff, ShieldCheck, ArrowLeft, Check } from 'lucide-react';
 import { useApp } from '../store.jsx';
 import { emptyPayment } from '../lib/payments.js';
 import Stepper from '../components/Stepper.jsx';
@@ -53,6 +53,7 @@ export default function Home() {
     const formats = (b.formats && b.formats.length) ? b.formats : ['BACS_IMPORT'];
     const outputFormat = formats.includes(settings.outputFormat) ? settings.outputFormat : formats[0];
     updateSettings({ selectedBank: id, outputFormat });
+    setStep(2);   // auto-advance to "Start your batch"
   };
 
   const onNewBatch = () => {
@@ -142,16 +143,12 @@ export default function Home() {
         </div>
       )}
 
-      <div className="wizard-nav">
-        {step === 2
-          ? <button className="btn ghost" onClick={() => setStep(1)}><ArrowLeft size={16} /> Back</button>
-          : <span />}
-        {step === 1 && (
-          <button className="btn primary" onClick={() => setStep(2)}>
-            Continue with {bank.name} <ArrowRight size={16} />
-          </button>
-        )}
-      </div>
+      {step === 2 && (
+        <div className="wizard-nav">
+          <button className="btn ghost" onClick={() => setStep(1)}><ArrowLeft size={16} /> Back to banks</button>
+          <span className="hint">Selected: <strong>{bank.name}</strong></span>
+        </div>
+      )}
     </div>
   );
 }
