@@ -4,6 +4,23 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.1.0 — 2026-06-28
+
+### Changed
+- **Refreshed design — calmer, more focused, 1Password-inspired.** A new semantic
+  design-token system (neutral palette with a single indigo accent) replaces the
+  Santander-red identity; each bank keeps its own brand colour on its picker tile.
+- **Persistent left sidebar** replaces the top tab bar for navigation (Home, Build
+  batch, Saved payees, History, with Help pinned at the bottom).
+- **Dark mode** — a new theme toggle cycles System / Light / Dark and remembers your
+  choice. Defaults to following your operating system.
+- **Real icon set** — replaced emoji/unicode glyphs with clean inline SVG icons.
+- Improved text contrast across both themes (WCAG AA) and softened cards, shadows and
+  spacing for a more spacious feel.
+
+> No changes to file formats or validation — every export (Bacs, Standard 18,
+> ISO 20022, SEPA) is byte-identical to v1.0.6.
+
 ## v1.0.6 — 2026-06-28
 
 ### Added

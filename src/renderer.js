@@ -19,7 +19,8 @@ let settings = {
   debtorBic: '',
   paymentDate: S.todayISO(),
   fileLocationId: '',
-  sequenceNumber: 1
+  sequenceNumber: 1,
+  theme: 'system'          // 'system' | 'light' | 'dark'
 };
 
 const $ = (sel) => document.querySelector(sel);
@@ -35,6 +36,7 @@ async function init() {
 
   // Restore remembered settings; payment date always defaults to today.
   applyStoredSettings();
+  applyTheme();   // apply the saved theme under the splash, before reveal
 
   writeSettingsToInputs();
   renderBankStrip();
@@ -88,6 +90,34 @@ function applyStoredSettings() {
   settings.paymentType = s.paymentType || S.PAYMENT_TYPES.SINGLE;
   settings.outputFormat = s.outputFormat || S.OUTPUT_FORMATS.BACS_IMPORT;
   settings.selectedBank = s.selectedBank || 'santander';
+  settings.theme = s.theme || 'system';
+}
+
+// ----------------------------------------------------------------- theme
+const THEME_ORDER = ['system', 'light', 'dark'];
+const THEME_ICONS = {
+  system: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg>',
+  light: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>',
+  dark: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>'
+};
+const THEME_LABELS = { system: 'System', light: 'Light', dark: 'Dark' };
+
+// Apply the current theme: 'system' clears the override and lets the
+// prefers-color-scheme media query decide; 'light'/'dark' force it.
+function applyTheme() {
+  const t = settings.theme || 'system';
+  if (t === 'system') delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t;
+  const icon = $('#theme-icon'), label = $('#theme-label');
+  if (icon) icon.innerHTML = THEME_ICONS[t];
+  if (label) label.textContent = THEME_LABELS[t];
+}
+
+function cycleTheme() {
+  const i = THEME_ORDER.indexOf(settings.theme || 'system');
+  settings.theme = THEME_ORDER[(i + 1) % THEME_ORDER.length];
+  applyTheme();
+  saveSettingsToData();
 }
 
 // ----------------------------------------------------------------- backup / restore
@@ -183,7 +213,8 @@ function saveSettingsToData() {
     debtorBic: settings.debtorBic,
     fileLocationId: settings.fileLocationId,
     sequenceNumber: settings.sequenceNumber,
-    paymentType: settings.paymentType
+    paymentType: settings.paymentType,
+    theme: settings.theme
   };
   persist();
 }
@@ -262,7 +293,7 @@ function applyColumnVisibility() {
 
 // ----------------------------------------------------------------- navigation
 function goToView(view) {
-  $$('.tab').forEach((x) => x.classList.toggle('active', x.dataset.view === view));
+  $$('.nav-item[data-view]').forEach((x) => x.classList.toggle('active', x.dataset.view === view));
   $$('.view').forEach((v) => v.classList.toggle('active', v.id === 'view-' + view));
   if (view === 'home') renderHomeRecent();
   document.querySelector('main').scrollTop = 0;
@@ -582,7 +613,8 @@ async function copyText(t) {
 }
 
 function wireEvents() {
-  $$('.tab').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
+  $$('.nav-item[data-view]').forEach((t) => t.addEventListener('click', () => goToView(t.dataset.view)));
+  $('#theme-toggle').addEventListener('click', cycleTheme);
   $('#brand-home').addEventListener('click', () => goToView('home'));
   $('#bank-indicator').addEventListener('click', () => goToView('home'));
   $('#bank-search').addEventListener('input', renderBankStrip);

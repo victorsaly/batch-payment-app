@@ -17,31 +17,52 @@
     <div class="splash-spinner"></div>
   </div>
 
-  <header class="topbar">
-    <div class="brand" id="brand-home" title="Go to home">
-      <img class="logo" src="logo.svg" alt="PayBatch logo" />
-      <div>
+  <div class="app-shell">
+    <!-- Persistent left sidebar (1Password-style navigation) -->
+    <aside class="sidebar">
+      <div class="brand sidebar-brand" id="brand-home" title="Go to home">
+        <img class="logo" src="logo.svg" alt="PayBatch logo" />
         <h1>PayBatch</h1>
-        <p class="sub">Build a payment run and export the bulk-payment file your bank expects</p>
       </div>
-    </div>
-    <nav class="tabs">
-      <button class="tab active" data-view="home">Home</button>
-      <button class="tab" data-view="batch">Build batch</button>
-      <button class="tab" data-view="payees">Saved payees</button>
-      <button class="tab" data-view="history">History</button>
-      <button class="tab" data-view="help">Help</button>
-    </nav>
-  </header>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="home">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+          <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-view="batch">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+          <span class="nav-label">Build batch</span>
+        </button>
+        <button class="nav-item" data-view="payees">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="nav-label">Saved payees</span>
+        </button>
+        <button class="nav-item" data-view="history">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+          <span class="nav-label">History</span>
+        </button>
+      </nav>
+      <div class="sidebar-foot">
+        <button class="nav-item" data-view="help">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          <span class="nav-label">Help</span>
+        </button>
+        <button class="nav-item theme-toggle" id="theme-toggle" title="Switch light / dark / system theme">
+          <span id="theme-icon" class="theme-icon"></span>
+          <span class="nav-label theme-label" id="theme-label">System</span>
+        </button>
+      </div>
+    </aside>
 
-  <!-- Update-available banner (populated by the main-process version check) -->
-  <div id="update-banner" class="update-banner hidden">
-    <span id="update-text"></span>
-    <span class="spacer"></span>
-    <button id="update-whatsnew" class="btn tiny ghost">What’s new</button>
-    <button id="update-download" class="btn tiny primary">Download</button>
-    <button id="update-dismiss" class="btn tiny ghost">Dismiss</button>
-  </div>
+    <div class="app-body">
+      <!-- Update-available banner (populated by the main-process version check) -->
+      <div id="update-banner" class="update-banner hidden">
+        <span id="update-text"></span>
+        <span class="spacer"></span>
+        <button id="update-whatsnew" class="btn tiny ghost">What’s new</button>
+        <button id="update-download" class="btn tiny primary">Download</button>
+        <button id="update-dismiss" class="btn tiny ghost">Dismiss</button>
+      </div>
 
   <main>
     <!-- ===================== HOME / LANDING VIEW ===================== -->
@@ -53,9 +74,9 @@
           <p>Turn your payment list into the exact file your bank expects — in three steps,
              with no fiddly spreadsheet.</p>
           <div class="home-trust" title="Your data never leaves this computer">
-            <span>🔒 Encrypted</span>
-            <span>📴 Works fully offline</span>
-            <span>🚫 Never uploaded or shared online</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Encrypted</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"/><path d="M8.5 16.4a5 5 0 0 1 7 0"/><path d="M5 13a10 10 0 0 1 5.24-2.76"/><path d="M10.7 5c4 .36 8.14 2 11.3 4.9"/><line x1="2" x2="22" y1="2" y2="22"/></svg> Works fully offline</span>
+            <span><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg> Never uploaded or shared online</span>
           </div>
         </div>
 
@@ -79,17 +100,17 @@
           <div class="home-step-label"><span class="step-num">2</span> Start your batch</div>
           <div class="home-actions">
             <button class="home-card" id="home-new">
-              <span class="home-card-icon">＋</span>
+              <span class="home-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M9 15h6"/><path d="M12 18v-6"/></svg></span>
               <span class="home-card-title">New batch</span>
               <span class="home-card-sub">Add payments in a grid or one at a time</span>
             </button>
             <button class="home-card" id="home-import">
-              <span class="home-card-icon">⤓</span>
+              <span class="home-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg></span>
               <span class="home-card-title">Import a file</span>
               <span class="home-card-sub">Load an Excel / CSV export</span>
             </button>
             <button class="home-card" id="home-template">
-              <span class="home-card-icon">▦</span>
+              <span class="home-card-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg></span>
               <span class="home-card-title">Get the template</span>
               <span class="home-card-sub">A ready-to-fill CSV to start from</span>
             </button>
@@ -493,6 +514,8 @@
       <span class="author">Created by <button id="author-link" class="link-quiet">Victor Saly</button></span>
     </span>
   </footer>
+    </div><!-- /.app-body -->
+  </div><!-- /.app-shell -->
 
   <!-- Simple modal for editing a payee -->
   <div id="modal" class="modal-backdrop hidden">
