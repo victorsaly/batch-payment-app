@@ -4,6 +4,16 @@ All notable changes to **PayBatch** are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project follows [Semantic Versioning](https://semver.org/).
 
+## v1.2.1 — 2026-06-28
+
+### Fixed
+- **Packaged builds launched to a blank white screen.** The React renderer
+  (`src/renderer-dist`) is generated at build time and isn't committed, but the
+  release workflow packaged the app without building it first — so v1.2.0 shipped
+  with no UI. The workflow now builds the renderer before packaging (and fails
+  loudly if the bundle is missing). Also includes the refined logo, animated
+  splash and two-tone wordmark.
+
 ## v1.2.0 — 2026-06-28
 
 ### Changed
