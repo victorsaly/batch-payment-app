@@ -6,6 +6,8 @@ contextBridge.exposeInMainWorld('api', {
   loadData: () => ipcRenderer.invoke('data:load'),
   saveData: (data) => ipcRenderer.invoke('data:save', data),
   dataStatus: () => ipcRenderer.invoke('data:status'),
+  exportData: (password) => ipcRenderer.invoke('data:export', password),
+  importData: (opts) => ipcRenderer.invoke('data:import', opts),
   exportFile: (payload) => ipcRenderer.invoke('file:export', payload),
   revealFile: (filePath) => ipcRenderer.invoke('file:reveal', filePath),
   importFile: () => ipcRenderer.invoke('file:import'),

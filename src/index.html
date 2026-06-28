@@ -371,6 +371,17 @@
         computer, encrypted with your operating-system keychain. Nothing is ever sent
         over the internet.</p>
 
+        <h3>Back up &amp; restore</h3>
+        <p>The encrypted store is locked to this computer, so it can’t be copied to a new
+        machine as-is. Save a <strong>backup file</strong> to move your data, or to keep a
+        safe copy. The backup is <strong>encrypted with a password you choose</strong>
+        (AES-256), so the file is unreadable to anyone without it — but keep the password
+        safe, as it can’t be recovered.</p>
+        <div class="form-actions">
+          <button id="backup-data" class="btn ghost">Back up my data…</button>
+          <button id="restore-data" class="btn ghost">Restore from backup…</button>
+        </div>
+
         <h3>Important</h3>
         <p>Always do one small <strong>test upload</strong> in Santander Connect to confirm
         a format is accepted before relying on it for a full payment run.</p>
@@ -540,6 +551,21 @@
       <div class="form-actions">
         <button id="errorlog-reveal" class="btn ghost">Open log file</button>
         <button id="errorlog-clear" class="btn ghost danger">Clear log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Password prompt (backup encrypt / restore decrypt) -->
+  <div id="pw-modal" class="modal-backdrop hidden">
+    <div class="modal">
+      <h3 id="pw-title">Password</h3>
+      <p id="pw-help" class="muted"></p>
+      <label>Password <input id="pw-input" type="password" autocomplete="off" /></label>
+      <label id="pw-confirm-wrap">Confirm password <input id="pw-confirm" type="password" autocomplete="off" /></label>
+      <p id="pw-error" class="field-msg err"></p>
+      <div class="form-actions">
+        <button id="pw-ok" class="btn primary">OK</button>
+        <button id="pw-cancel" class="btn ghost">Cancel</button>
       </div>
     </div>
   </div>

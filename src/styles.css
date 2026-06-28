@@ -106,6 +106,7 @@ body {
 }
 .topbar h1 { font-size: 18px; margin: 0; }
 .sub { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+.muted { color: var(--muted); font-size: 13px; }
 
 .tabs { display: flex; gap: 4px; }
 .tab {

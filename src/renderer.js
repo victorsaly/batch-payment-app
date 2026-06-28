@@ -34,15 +34,7 @@ async function init() {
   data.settings = data.settings || {};
 
   // Restore remembered settings; payment date always defaults to today.
-  settings.debitSortCode = data.settings.debitSortCode || '';
-  settings.debitAccountNumber = data.settings.debitAccountNumber || '';
-  settings.debtorIban = data.settings.debtorIban || '';
-  settings.debtorBic = data.settings.debtorBic || '';
-  settings.fileLocationId = data.settings.fileLocationId || '';
-  settings.sequenceNumber = data.settings.sequenceNumber || 1;
-  settings.paymentType = data.settings.paymentType || S.PAYMENT_TYPES.SINGLE;
-  settings.outputFormat = data.settings.outputFormat || S.OUTPUT_FORMATS.BACS_IMPORT;
-  settings.selectedBank = data.settings.selectedBank || 'santander';
+  applyStoredSettings();
 
   writeSettingsToInputs();
   renderBankStrip();
@@ -82,6 +74,104 @@ function renderAll() {
 }
 
 async function persist() { await window.api.saveData(data); }
+
+// Copy the remembered settings from the saved store into the live `settings`
+// object (payment date always defaults to today, so it's deliberately omitted).
+function applyStoredSettings() {
+  const s = data.settings || {};
+  settings.debitSortCode = s.debitSortCode || '';
+  settings.debitAccountNumber = s.debitAccountNumber || '';
+  settings.debtorIban = s.debtorIban || '';
+  settings.debtorBic = s.debtorBic || '';
+  settings.fileLocationId = s.fileLocationId || '';
+  settings.sequenceNumber = s.sequenceNumber || 1;
+  settings.paymentType = s.paymentType || S.PAYMENT_TYPES.SINGLE;
+  settings.outputFormat = s.outputFormat || S.OUTPUT_FORMATS.BACS_IMPORT;
+  settings.selectedBank = s.selectedBank || 'santander';
+}
+
+// ----------------------------------------------------------------- backup / restore
+// A small promise-based password prompt (Electron has no window.prompt). When
+// `confirm` is set the user must type the password twice (used for backup).
+function askPassword({ title, help, confirm }) {
+  return new Promise((resolve) => {
+    const modal = $('#pw-modal');
+    const input = $('#pw-input');
+    const confirmInput = $('#pw-confirm');
+    const err = $('#pw-error');
+    $('#pw-title').textContent = title;
+    $('#pw-help').textContent = help || '';
+    $('#pw-confirm-wrap').classList.toggle('hidden', !confirm);
+    input.value = '';
+    confirmInput.value = '';
+    err.textContent = '';
+    modal.classList.remove('hidden');
+    input.focus();
+
+    const close = (value) => {
+      modal.classList.add('hidden');
+      $('#pw-ok').removeEventListener('click', onOk);
+      $('#pw-cancel').removeEventListener('click', onCancel);
+      input.removeEventListener('keydown', onKey);
+      confirmInput.removeEventListener('keydown', onKey);
+      resolve(value);
+    };
+    const onOk = () => {
+      const pw = input.value;
+      if (!pw) { err.textContent = 'Please enter a password.'; return; }
+      if (confirm && pw !== confirmInput.value) { err.textContent = 'The two passwords don’t match.'; return; }
+      close(pw);
+    };
+    const onCancel = () => close(null);
+    const onKey = (e) => { if (e.key === 'Enter') onOk(); else if (e.key === 'Escape') onCancel(); };
+    $('#pw-ok').addEventListener('click', onOk);
+    $('#pw-cancel').addEventListener('click', onCancel);
+    input.addEventListener('keydown', onKey);
+    confirmInput.addEventListener('keydown', onKey);
+  });
+}
+
+async function onBackupData() {
+  const password = await askPassword({
+    title: 'Encrypt your backup',
+    help: 'Choose a password — you’ll need it to restore. It can’t be recovered if you forget it.',
+    confirm: true
+  });
+  if (password === null) return;   // cancelled
+  try {
+    const r = await window.api.exportData(password);
+    if (r && r.saved) toast(`Encrypted backup saved — ${r.counts.payees} payees, ${r.counts.batches} batches`);
+  } catch (_) { toast('Could not save the backup', true); }
+}
+
+async function onRestoreData() {
+  const ok = window.confirm(
+    'Restoring will REPLACE your current payees, saved batches and settings with the '
+    + 'contents of the backup file. This cannot be undone.\n\nContinue?');
+  if (!ok) return;
+  try {
+    let r = await window.api.importData();   // first call: pick the file
+    if (r && r.needPassword) {
+      const password = await askPassword({ title: 'Restore backup', help: 'This backup is password-protected. Enter its password.' });
+      if (password === null) return;
+      r = await window.api.importData({ password, filePath: r.filePath });
+    }
+    if (!r || !r.restored) { if (r && r.error) toast(r.error, true); return; }
+    data = r.data;
+    data.payees = data.payees || [];
+    data.batches = data.batches || [];
+    data.settings = data.settings || {};
+    applyStoredSettings();
+    writeSettingsToInputs();
+    renderBankStrip();
+    applyBankUI();
+    updateBankIndicator();
+    renderFormatSeg();
+    applyFormatUI();
+    renderAll();
+    toast(`Restored — ${r.counts.payees} payees, ${r.counts.batches} batches`);
+  } catch (_) { toast('Could not restore from that file', true); }
+}
 
 function saveSettingsToData() {
   data.settings = {
@@ -541,6 +631,8 @@ function wireEvents() {
   $('#errorlog-close').addEventListener('click', () => $('#errorlog-modal').classList.add('hidden'));
   $('#errorlog-reveal').addEventListener('click', () => window.api.revealErrorLog());
   $('#errorlog-clear').addEventListener('click', async () => { await window.api.clearErrors(); openErrorLog(); toast('Error log cleared'); });
+  $('#backup-data').addEventListener('click', onBackupData);
+  $('#restore-data').addEventListener('click', onRestoreData);
   $('#changelog-close').addEventListener('click', () => $('#changelog-modal').classList.add('hidden'));
   $('#check-updates').addEventListener('click', () => { checkForUpdates(true); toast('Checking for updates…'); });
 }

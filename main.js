@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, dialog, shell, safeStorage } = require('ele
 const path = require('path');
 const fs = require('fs');
 const https = require('https');
+const crypto = require('crypto');
 
 // Where to look for new releases (the GitHub repo backing this app).
 const REPO = { owner: 'victorsaly', repo: 'batch-payment-app' };
@@ -248,6 +249,101 @@ ipcMain.handle('file:import', async () => {
   if (canceled || !filePaths || !filePaths[0]) return { imported: false };
   const contents = fs.readFileSync(filePaths[0], 'utf8');
   return { imported: true, filePath: filePaths[0], contents };
+});
+
+// ---- IPC: back up / restore the local store ----
+// A backup is a snapshot the user explicitly saves somewhere of their choosing,
+// so it survives a machine move / OS-keychain reset (the on-disk store is
+// encrypted to *this* machine and can't be moved). To avoid leaving payee bank
+// details readable on disk, a backup is encrypted with a USER-CHOSEN PASSWORD —
+// AES-256-GCM with a scrypt-derived key — which keeps it both unreadable and
+// portable (any machine can restore it with the password). Older plain-JSON
+// backups are still accepted on restore for backward compatibility.
+function encryptBackup(jsonString, password) {
+  const salt = crypto.randomBytes(16);
+  const iv = crypto.randomBytes(12);
+  const key = crypto.scryptSync(password, salt, 32);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const ct = Buffer.concat([cipher.update(jsonString, 'utf8'), cipher.final()]);
+  return {
+    _app: 'PayBatch', _type: 'backup', _format: 'aes-256-gcm', _kdf: 'scrypt',
+    _version: app.getVersion(), _exportedAt: new Date().toISOString(),
+    salt: salt.toString('base64'), iv: iv.toString('base64'),
+    tag: cipher.getAuthTag().toString('base64'), ciphertext: ct.toString('base64')
+  };
+}
+
+function decryptBackup(obj, password) {
+  const key = crypto.scryptSync(password, Buffer.from(obj.salt, 'base64'), 32);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, Buffer.from(obj.iv, 'base64'));
+  decipher.setAuthTag(Buffer.from(obj.tag, 'base64'));
+  const out = Buffer.concat([decipher.update(Buffer.from(obj.ciphertext, 'base64')), decipher.final()]);
+  return JSON.parse(out.toString('utf8'));
+}
+
+ipcMain.handle('data:export', async (_evt, password) => {
+  const data = loadData();
+  const d = new Date().toISOString().slice(0, 10);
+  const { canceled, filePath } = await dialog.showSaveDialog({
+    title: 'Back up PayBatch data',
+    defaultPath: `paybatch-backup-${d}.paybatch`,
+    filters: [{ name: 'PayBatch backup', extensions: ['paybatch', 'json'] }, { name: 'All files', extensions: ['*'] }]
+  });
+  if (canceled || !filePath) return { saved: false };
+
+  let payload;
+  if (password) {
+    payload = encryptBackup(JSON.stringify(data), password);
+  } else {
+    // No password → fall back to a clearly-labelled plain snapshot.
+    payload = { _app: 'PayBatch', _type: 'backup', _format: 'plain', _version: app.getVersion(), _exportedAt: new Date().toISOString(), data };
+  }
+  fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+  return { saved: true, filePath, encrypted: !!password, counts: { payees: data.payees.length, batches: data.batches.length } };
+});
+
+// opts: { password, filePath }. On the first call filePath is omitted, so we
+// show the Open dialog. If the chosen backup is encrypted we return its path so
+// the renderer can re-call with the password WITHOUT re-opening the dialog.
+ipcMain.handle('data:import', async (_evt, opts) => {
+  const { password, filePath } = opts || {};
+  let chosen = filePath;
+  if (!chosen) {
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      title: 'Restore PayBatch data from a backup',
+      properties: ['openFile'],
+      filters: [{ name: 'PayBatch backup', extensions: ['paybatch', 'json'] }, { name: 'All files', extensions: ['*'] }]
+    });
+    if (canceled || !filePaths || !filePaths[0]) return { restored: false };
+    chosen = filePaths[0];
+  }
+
+  let parsed;
+  try { parsed = JSON.parse(fs.readFileSync(chosen, 'utf8')); }
+  catch (_) { return { restored: false, error: 'That file isn’t a PayBatch backup.' }; }
+
+  let incoming;
+  if (parsed && parsed._format === 'aes-256-gcm') {
+    if (!password) return { restored: false, needPassword: true, filePath: chosen };
+    try { incoming = decryptBackup(parsed, password); }
+    catch (_) { return { restored: false, badPassword: true, error: 'Wrong password, or the backup is corrupt.' }; }
+  } else {
+    // Plain backup ({ data: {...} }) or a bare data object.
+    incoming = parsed && parsed.data && typeof parsed.data === 'object' ? parsed.data : parsed;
+  }
+
+  if (!incoming || typeof incoming !== 'object'
+    || !Array.isArray(incoming.payees) || !Array.isArray(incoming.batches)) {
+    return { restored: false, error: 'That file isn’t a PayBatch backup.' };
+  }
+
+  const clean = {
+    payees: incoming.payees,
+    batches: incoming.batches,
+    settings: (incoming.settings && typeof incoming.settings === 'object') ? incoming.settings : {}
+  };
+  saveData(clean);
+  return { restored: true, data: { ...DEFAULT_DATA, ...clean }, counts: { payees: clean.payees.length, batches: clean.batches.length } };
 });
 
 app.whenReady().then(() => {
