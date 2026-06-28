@@ -2,30 +2,30 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#fdeaea"/>
+      <stop offset="1" stop-color="#eef1fd"/>
     </linearGradient>
     <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ff2b2b"/>
-      <stop offset="1" stop-color="#cc0000"/>
+      <stop offset="0" stop-color="#5b7cfa"/>
+      <stop offset="1" stop-color="#3358d4"/>
     </linearGradient>
     <filter id="sh" x="-30%" y="-30%" width="160%" height="160%">
-      <feDropShadow dx="0" dy="14" stdDeviation="24" flood-color="#cc0000" flood-opacity="0.22"/>
+      <feDropShadow dx="0" dy="14" stdDeviation="24" flood-color="#3358d4" flood-opacity="0.22"/>
     </filter>
   </defs>
 
   <rect width="1200" height="630" fill="url(#bg)"/>
 
   <!-- left: text (kept clear of the tile on the right) -->
-  <text x="84" y="132" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" fill="#ec0000" letter-spacing="3">PAYBATCH</text>
+  <text x="84" y="132" font-family="Georgia, 'Times New Roman', serif" font-size="28" font-weight="700" fill="#3e63dd" letter-spacing="3">PAYBATCH</text>
   <text x="80" y="258" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="800" fill="#1b2230" letter-spacing="-1.5">Bulk bank payments,</text>
   <text x="80" y="330" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="800" fill="#1b2230" letter-spacing="-1.5">without the</text>
-  <text x="80" y="402" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="800" fill="#ec0000" letter-spacing="-1.5">spreadsheet.</text>
+  <text x="80" y="402" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="60" font-weight="800" fill="#3e63dd" letter-spacing="-1.5">spreadsheet.</text>
   <text x="84" y="468" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="26" fill="#44505f">Build &amp; export your bank's payment file.</text>
 
   <!-- chips -->
   <g font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="23" font-weight="700">
-    <rect x="84" y="508" width="186" height="50" rx="25" fill="#fde7e7"/>
-    <text x="177" y="540" fill="#ec0000" text-anchor="middle">Free &amp; open</text>
+    <rect x="84" y="508" width="186" height="50" rx="25" fill="#eef1fd"/>
+    <text x="177" y="540" fill="#3e63dd" text-anchor="middle">Free &amp; open</text>
     <rect x="286" y="508" width="180" height="50" rx="25" fill="#eef1f5"/>
     <text x="376" y="540" fill="#44505f" text-anchor="middle">Encrypted</text>
   </g>
@@ -37,7 +37,7 @@
     <rect x="956" y="289" width="132" height="23" rx="11.5" fill="#ffffff" opacity="0.80"/>
     <rect x="956" y="328" width="132" height="23" rx="11.5" fill="#ffffff" opacity="0.62"/>
     <circle cx="1082" cy="366" r="46" fill="#ffffff"/>
-    <text x="1082" y="389" font-family="Georgia, serif" font-size="64" font-weight="700" fill="#cc0000" text-anchor="middle">£</text>
+    <text x="1082" y="389" font-family="Georgia, serif" font-size="64" font-weight="700" fill="#3358d4" text-anchor="middle">£</text>
   </g>
 
   <text x="892" y="488" font-family="-apple-system, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="#6b7685" text-anchor="middle" style="text-anchor:middle"><tspan x="1012">macOS · Windows · Linux</tspan></text>
